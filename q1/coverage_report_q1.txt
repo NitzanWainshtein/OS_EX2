@@ -1,0 +1,10 @@
+=== Q1 Code Coverage Report ===
+Generated on: 
+
+Lines executed:89.52% of 105
+Lines executed:85.71% of 91
+Lines executed:87.76% of 196
+
+Coverage files (.gcov) generated:
+atom_supplier.c.gcov
+atom_warehouse.c.gcov
