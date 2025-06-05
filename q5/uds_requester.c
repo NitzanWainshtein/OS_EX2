@@ -25,6 +25,9 @@
 #define BUFFER_SIZE 256
 #define MAX_ATOMS 1000000000000000000ULL
 
+/**
+ * show_usage - displays usage instructions
+ */
 void show_usage(const char *program_name) {
     printf("Usage: %s [network options] [uds options]\n\n", program_name);
     printf("Network options:\n");
@@ -40,6 +43,9 @@ void show_usage(const char *program_name) {
     printf("  %s -f /tmp/stream.sock\n", program_name);
 }
 
+/**
+ * show_main_menu - displays the main menu
+ */
 void show_main_menu(int molecule_enabled) {
     printf("\n=== MOLECULE REQUESTER MENU ===\n");
     printf("1. Add atoms\n");
@@ -48,16 +54,26 @@ void show_main_menu(int molecule_enabled) {
     printf("Your choice: ");
 }
 
+/**
+ * show_atom_menu - displays the atoms menu
+ */
 void show_atom_menu() {
     printf("\n--- ADD ATOMS ---\n");
     printf("1. CARBON\n2. OXYGEN\n3. HYDROGEN\n4. Back\nYour choice: ");
 }
 
+/**
+ * show_molecule_menu - displays the molecules menu
+ */
 void show_molecule_menu() {
     printf("\n--- REQUEST MOLECULE ---\n");
     printf("1. WATER\n2. CARBON DIOXIDE\n3. ALCOHOL\n4. GLUCOSE\n5. Back\nYour choice: ");
 }
 
+/**
+ * read_unsigned_long_long - reads a positive number from user
+ * returns 1 on success, 0 on failure
+ */
 int read_unsigned_long_long(unsigned long long *result) {
     char input[BUFFER_SIZE];
     if (!fgets(input, sizeof(input), stdin)) return 0;
@@ -69,6 +85,9 @@ int read_unsigned_long_long(unsigned long long *result) {
     return 1;
 }
 
+/**
+ * hostname_to_ip - converts hostname to IP
+ */
 int hostname_to_ip(const char *hostname, char *ip) {
     struct hostent *he;
     struct in_addr addr;
@@ -87,6 +106,9 @@ int hostname_to_ip(const char *hostname, char *ip) {
     return 0;
 }
 
+/**
+ * is_shutdown_message - checks if the server is shutting down
+ */
 int is_shutdown_message(const char *msg) {
     return (strstr(msg, "shutting down") != NULL || 
             strstr(msg, "shutdown") != NULL ||
@@ -94,11 +116,13 @@ int is_shutdown_message(const char *msg) {
 }
 
 int main(int argc, char *argv[]) {
+    // Configuration variables
     char *server_host = NULL;
     int tcp_port = -1, udp_port = -1;
     char *uds_stream_path = NULL, *uds_datagram_path = NULL;
     int use_uds = 0, use_network = 0;
     
+    // Parse arguments
     int opt;
     while ((opt = getopt(argc, argv, "h:p:u:f:d:")) != -1) {
         switch (opt) {
@@ -136,7 +160,7 @@ int main(int argc, char *argv[]) {
         }
     }
     
-    // Check for conflicting arguments
+    // Validate arguments
     if (use_uds && use_network) {
         fprintf(stderr, "Error: Cannot use both UDS socket files and network address/port\n");
         exit(EXIT_FAILURE);
@@ -169,7 +193,7 @@ int main(int argc, char *argv[]) {
     int molecule_enabled = 0;
     
     if (use_network) {
-        // TCP connection using getaddrinfo (as required by PDF)
+        // TCP connection using getaddrinfo (as required in PDF)
         struct addrinfo hints, *servinfo, *p;
         int rv;
         
@@ -185,7 +209,7 @@ int main(int argc, char *argv[]) {
             exit(EXIT_FAILURE);
         }
         
-        // Try to connect
+        // Connection attempt
         for(p = servinfo; p != NULL; p = p->ai_next) {
             if ((stream_fd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1) {
                 perror("socket");
@@ -263,6 +287,7 @@ int main(int argc, char *argv[]) {
         printf("\n");
     }
 
+    // Main program loop
     int running = 1;
     int server_connected = 1;
     char buffer[BUFFER_SIZE], recv_buffer[BUFFER_SIZE];
@@ -331,7 +356,7 @@ int main(int argc, char *argv[]) {
                         break;
                     }
                     
-                    // Try to receive additional messages (like status update)
+                    // Attempt to receive additional messages (like status updates)
                     fd_set read_fds;
                     struct timeval timeout;
                     FD_ZERO(&read_fds);
@@ -371,7 +396,7 @@ int main(int argc, char *argv[]) {
                     default: printf("Invalid molecule choice.\n"); continue;
                 }
 
-                // STRICT quantity validation - NO default fallback
+                // ✅ Strict quantity validation - no defaults
                 unsigned long long quantity;
                 while (1) {
                     printf("How many %s molecules to request (1-%llu): ", mol, MAX_ATOMS);
@@ -435,6 +460,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    // Cleanup resources
     close(stream_fd);
     if (datagram_fd != -1) close(datagram_fd);
     

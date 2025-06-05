@@ -17,7 +17,7 @@ coverage:
 
 coverage-report:
 	@echo "=== Q3 Code Coverage Report ===" > coverage_report_q3.txt
-	@echo "Generated on: $(date)" >> coverage_report_q3.txt
+	@echo "Generated on: $$(date)" >> coverage_report_q3.txt
 	@echo "" >> coverage_report_q3.txt
 	@gcov bar_drinks.c 2>&1 | grep "Lines executed" >> coverage_report_q3.txt 2>/dev/null || echo "No coverage data found - run programs first" >> coverage_report_q3.txt
 	@echo "" >> coverage_report_q3.txt
@@ -25,6 +25,9 @@ coverage-report:
 	@echo "" >> coverage_report_q3.txt
 	@echo "Coverage files (.gcov) generated:" >> coverage_report_q3.txt
 	@ls *.gcov >> coverage_report_q3.txt 2>/dev/null || echo "No .gcov files found" >> coverage_report_q3.txt
+	@echo "" >> coverage_report_q3.txt
+	@echo "=== Uncovered Lines (####) ===" >> coverage_report_q3.txt
+	@grep "####" *.gcov >> coverage_report_q3.txt 2>/dev/null || echo "All lines covered!" >> coverage_report_q3.txt
 	@echo "Coverage report saved to coverage_report_q3.txt"
 
 clean:

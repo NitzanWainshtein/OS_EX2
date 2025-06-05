@@ -1,10 +1,50 @@
 === Q1 Code Coverage Report ===
-Generated on: 
+Generated on: Thu Jun  5 13:30:56 IDT 2025
 
-Lines executed:89.52% of 105
-Lines executed:85.71% of 91
-Lines executed:87.76% of 196
+Lines executed:87.50% of 120
+Lines executed:78.90% of 109
+Lines executed:83.41% of 229
 
 Coverage files (.gcov) generated:
 atom_supplier.c.gcov
 atom_warehouse.c.gcov
+
+=== Uncovered Lines (####) ===
+atom_supplier.c.gcov:    #####:   62:        return 0;  // Input error or EOF
+atom_supplier.c.gcov:    #####:  114:            } else if (nbytes == 0) {
+atom_supplier.c.gcov:    #####:  115:                printf("Server disconnected.\n");
+atom_supplier.c.gcov:    #####:  116:                break;
+atom_supplier.c.gcov:    #####:  117:            } else if (errno != EAGAIN && errno != EWOULDBLOCK) {
+atom_supplier.c.gcov:    #####:  118:                perror("Error receiving from server");
+atom_supplier.c.gcov:    #####:  119:                break;
+atom_supplier.c.gcov:    #####:  168:            perror("Error creating socket");
+atom_supplier.c.gcov:    #####:  169:            continue;
+atom_supplier.c.gcov:    #####:  257:            printf("Notice: server closed the connection before you could send your command.\n");
+atom_supplier.c.gcov:    #####:  258:            break;
+atom_supplier.c.gcov:    #####:  260:            perror("Error checking server status before sending");
+atom_supplier.c.gcov:    #####:  261:            break;
+atom_supplier.c.gcov:    #####:  266:            perror("Error sending data to server");
+atom_supplier.c.gcov:    #####:  267:            break;
+atom_warehouse.c.gcov:    #####:   61:            snprintf(response, sizeof(response), "ERROR: Amount too large, max allowed per command is %llu.\n", MAX_ATOMS);
+atom_warehouse.c.gcov:    #####:   62:            printf("Error: amount too large, max allowed per command is %llu.\n", MAX_ATOMS);
+atom_warehouse.c.gcov:    #####:   63:            send(client_fd, response, strlen(response), 0);
+atom_warehouse.c.gcov:    #####:   95:                snprintf(response, sizeof(response), "ERROR: Adding this would exceed HYDROGEN storage limit (%llu).\n", MAX_ATOMS);
+atom_warehouse.c.gcov:    #####:   96:                printf("Error: adding this would exceed HYDROGEN storage limit (%llu).\n", MAX_ATOMS);
+atom_warehouse.c.gcov:    #####:   97:                send(client_fd, response, strlen(response), 0);
+atom_warehouse.c.gcov:    #####:   98:                return;
+atom_warehouse.c.gcov:    #####:  106:            snprintf(response, sizeof(response), "ERROR: Unknown atom type: %s\n", type);
+atom_warehouse.c.gcov:    #####:  107:            printf("Unknown atom type: %s\n", type);
+atom_warehouse.c.gcov:    #####:  108:            send(client_fd, response, strlen(response), 0);
+atom_warehouse.c.gcov:    #####:  109:            return;
+atom_warehouse.c.gcov:    #####:  113:        snprintf(response, sizeof(response), "ERROR: Invalid command format: %s", cmd);
+atom_warehouse.c.gcov:    #####:  114:        printf("Invalid command: %s\n", cmd);
+atom_warehouse.c.gcov:    #####:  115:        send(client_fd, response, strlen(response), 0);
+atom_warehouse.c.gcov:    #####:  116:        return;
+atom_warehouse.c.gcov:    #####:  171:        perror("socket error");
+atom_warehouse.c.gcov:    #####:  172:        exit(1);
+atom_warehouse.c.gcov:    #####:  189:        perror("listen");
+atom_warehouse.c.gcov:    #####:  190:        exit(1);
+atom_warehouse.c.gcov:    #####:  208:            perror("select");
+atom_warehouse.c.gcov:    #####:  209:            exit(1);
+atom_warehouse.c.gcov:    #####:  222:                        perror("accept");
+atom_warehouse.c.gcov:    #####:  255:                            perror("recv");

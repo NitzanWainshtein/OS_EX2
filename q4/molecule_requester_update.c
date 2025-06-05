@@ -2,9 +2,11 @@
  * molecule_requester_update.c - Q4
  *
  * Client with command line options support.
+ * Supports both TCP (atoms) and UDP (molecules).
+ * Enhanced with proper getaddrinfo usage for hostname resolution.
  * 
  * Usage:
- *   ./molecule_requester_update -h <hostname/IP> -p <port>
+ *   ./molecule_requester_update -h <hostname/IP> -p <tcp_port> [-u <udp_port>]
  */
 
 #include <stdio.h>
@@ -16,19 +18,39 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <errno.h>
 #include <netdb.h>
+#include <errno.h>
 
 #define BUFFER_SIZE 256
 #define MAX_ATOMS 1000000000000000000ULL
 
 void show_usage(const char *program_name) {
-    printf("Usage: %s -h <hostname/IP> -p <port>\n", program_name);
+    printf("Usage: %s -h <hostname/IP> -p <tcp_port> [-u <udp_port>]\n\n", program_name);
+    printf("Required options:\n");
+    printf("  -h <hostname/IP>   Server hostname or IP address\n");
+    printf("  -p <tcp_port>      TCP port for atom operations\n\n");
+    printf("Optional options:\n");
+    printf("  -u <udp_port>      UDP port for molecule operations\n\n");
+    printf("Example:\n");
+    printf("  %s -h localhost -p 12345 -u 12346\n", program_name);
+}
+
+void show_main_menu(int udp_enabled) {
+    printf("\n=== MOLECULE REQUESTER MENU ===\n");
+    printf("1. Add atoms (TCP)\n");
+    if (udp_enabled) printf("2. Request molecule delivery (UDP)\n");
+    printf("3. Quit\n");
+    printf("Your choice: ");
 }
 
 void show_atom_menu() {
     printf("\n--- ADD ATOMS ---\n");
     printf("1. CARBON\n2. OXYGEN\n3. HYDROGEN\n4. Back\nYour choice: ");
+}
+
+void show_molecule_menu() {
+    printf("\n--- REQUEST MOLECULE ---\n");
+    printf("1. WATER\n2. CARBON DIOXIDE\n3. ALCOHOL\n4. GLUCOSE\n5. Back\nYour choice: ");
 }
 
 int read_unsigned_long_long(unsigned long long *result) {
@@ -42,24 +64,7 @@ int read_unsigned_long_long(unsigned long long *result) {
     return 1;
 }
 
-int hostname_to_ip(const char *hostname, char *ip) {
-    struct hostent *he;
-    struct in_addr addr;
-    
-    if (inet_aton(hostname, &addr)) {
-        strcpy(ip, hostname);
-        return 0;
-    }
-    
-    he = gethostbyname(hostname);
-    if (he == NULL) {
-        return -1;
-    }
-    
-    strcpy(ip, inet_ntoa(*((struct in_addr*)he->h_addr)));
-    return 0;
-}
-
+// Check if server message indicates shutdown
 int is_shutdown_message(const char *msg) {
     return (strstr(msg, "shutting down") != NULL || 
             strstr(msg, "shutdown") != NULL ||
@@ -69,9 +74,12 @@ int is_shutdown_message(const char *msg) {
 int main(int argc, char *argv[]) {
     char *server_host = NULL;
     int tcp_port = -1;
+    int udp_port = -1;
+    int udp_enabled = 0;
     
+    // Parse command line options
     int opt;
-    while ((opt = getopt(argc, argv, "h:p:")) != -1) {
+    while ((opt = getopt(argc, argv, "h:p:u:")) != -1) {
         switch (opt) {
             case 'h':
                 server_host = optarg;
@@ -79,9 +87,17 @@ int main(int argc, char *argv[]) {
             case 'p':
                 tcp_port = atoi(optarg);
                 if (tcp_port <= 0 || tcp_port > 65535) {
-                    fprintf(stderr, "Error: Invalid port: %s\n", optarg);
+                    fprintf(stderr, "Error: Invalid TCP port: %s\n", optarg);
                     exit(EXIT_FAILURE);
                 }
+                break;
+            case 'u':
+                udp_port = atoi(optarg);
+                if (udp_port <= 0 || udp_port > 65535) {
+                    fprintf(stderr, "Error: Invalid UDP port: %s\n", optarg);
+                    exit(EXIT_FAILURE);
+                }
+                udp_enabled = 1;
                 break;
             default:
                 show_usage(argv[0]);
@@ -89,58 +105,88 @@ int main(int argc, char *argv[]) {
         }
     }
     
-    if (!server_host) {
-        fprintf(stderr, "Error: Server hostname/IP is required (-h option)\n");
+    // Validate required arguments
+    if (!server_host || tcp_port == -1) {
+        fprintf(stderr, "Error: -h and -p are required\n");
         show_usage(argv[0]);
         exit(EXIT_FAILURE);
     }
     
-    if (tcp_port == -1) {
-        fprintf(stderr, "Error: Port is required (-p option)\n");
-        show_usage(argv[0]);
+    // TCP connection using getaddrinfo (as required by PDF)
+    struct addrinfo hints, *servinfo, *p;
+    int rv;
+    int tcp_fd = -1;
+    
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    
+    char port_str[6];
+    snprintf(port_str, sizeof(port_str), "%d", tcp_port);
+    
+    if ((rv = getaddrinfo(server_host, port_str, &hints, &servinfo)) != 0) {
+        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
         exit(EXIT_FAILURE);
     }
     
-    // Resolve hostname to IP
-    char server_ip[16];
-    if (hostname_to_ip(server_host, server_ip) != 0) {
-        fprintf(stderr, "Could not resolve hostname: %s\n", server_host);
+    // Try to connect
+    for(p = servinfo; p != NULL; p = p->ai_next) {
+        if ((tcp_fd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1) {
+            perror("socket");
+            continue;
+        }
+        
+        if (connect(tcp_fd, p->ai_addr, p->ai_addrlen) == -1) {
+            close(tcp_fd);
+            perror("connect");
+            continue;
+        }
+        
+        break;
+    }
+    
+    if (p == NULL) {
+        fprintf(stderr, "Failed to connect\n");
+        freeaddrinfo(servinfo);
         exit(EXIT_FAILURE);
     }
-
-    // TCP setup
-    int tcp_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (tcp_fd < 0) {
-        perror("TCP socket creation failed");
-        exit(EXIT_FAILURE);
+    
+    char server_ip[INET_ADDRSTRLEN];
+    struct sockaddr_in *addr = (struct sockaddr_in *)p->ai_addr;
+    inet_ntop(AF_INET, &(addr->sin_addr), server_ip, INET_ADDRSTRLEN);
+    
+    freeaddrinfo(servinfo);
+    
+    printf("Connected to server at %s:%d", server_ip, tcp_port);
+    
+    // UDP setup if enabled
+    int udp_fd = -1;
+    struct sockaddr_in udp_addr;
+    if (udp_enabled) {
+        udp_fd = socket(AF_INET, SOCK_DGRAM, 0);
+        if (udp_fd < 0) {
+            perror("UDP socket");
+            close(tcp_fd);
+            exit(EXIT_FAILURE);
+        }
+        
+        // Setup UDP address using same IP as TCP
+        memset(&udp_addr, 0, sizeof(udp_addr));
+        udp_addr.sin_family = AF_INET;
+        udp_addr.sin_port = htons(udp_port);
+        udp_addr.sin_addr = addr->sin_addr;
+        
+        printf(", UDP:%d", udp_port);
     }
+    printf("\n");
 
-    struct sockaddr_in tcp_addr;
-    tcp_addr.sin_family = AF_INET;
-    tcp_addr.sin_port = htons(tcp_port);
-    if (inet_pton(AF_INET, server_ip, &tcp_addr.sin_addr) <= 0) {
-        fprintf(stderr, "Invalid IP address: %s\n", server_ip);
-        close(tcp_fd);
-        exit(EXIT_FAILURE);
-    }
-
-    if (connect(tcp_fd, (struct sockaddr*)&tcp_addr, sizeof(tcp_addr)) < 0) {
-        perror("TCP connection failed");
-        close(tcp_fd);
-        exit(EXIT_FAILURE);
-    }
-
-    printf("Connected to server at %s:%d\n", server_ip, tcp_port);
-
+    // Main loop
     int running = 1;
     int server_connected = 1;
     char buffer[BUFFER_SIZE], recv_buffer[BUFFER_SIZE];
     
     while (running && server_connected) {
-        printf("\n=== ATOM SUPPLIER ===\n");
-        printf("1. Add atoms\n");
-        printf("2. Quit\n");
-        printf("Your choice: ");
+        show_main_menu(udp_enabled);
         
         int choice;
         if (scanf("%d", &choice) != 1) { 
@@ -150,7 +196,7 @@ int main(int argc, char *argv[]) {
         while (getchar() != '\n');
 
         if (choice == 1) {
-            // Add atoms
+            // Add atoms via TCP
             int atom_choice;
             while (server_connected) {
                 show_atom_menu();
@@ -179,33 +225,93 @@ int main(int argc, char *argv[]) {
 
                 snprintf(buffer, sizeof(buffer), "ADD %s %llu\n", atom, amount);
                 if (send(tcp_fd, buffer, strlen(buffer), 0) == -1) {
-                    perror("TCP send failed");
+                    perror("send");
                     server_connected = 0;
                     break;
                 }
                 
+                // Receive and display server response
                 int n = recv(tcp_fd, recv_buffer, sizeof(recv_buffer) - 1, 0);
                 if (n <= 0) {
-                    if (n == 0) {
-                        printf("Server disconnected.\n");
-                    } else {
-                        perror("TCP receive failed");
-                    }
+                    if (n == 0) printf("Server disconnected.\n");
+                    else perror("recv");
                     server_connected = 0;
                     break;
-                } else {
-                    recv_buffer[n] = '\0';
-                    printf("Server: %s", recv_buffer);
-                    
-                    if (is_shutdown_message(recv_buffer)) {
-                        printf("Server is shutting down. Disconnecting...\n");
-                        server_connected = 0;
-                        break;
+                }
+                
+                recv_buffer[n] = '\0';
+                printf("Server: %s", recv_buffer);
+                
+                // Check if server is shutting down
+                if (is_shutdown_message(recv_buffer)) {
+                    printf("Server is shutting down. Disconnecting...\n");
+                    server_connected = 0;
+                    break;
+                }
+                
+                // Try to receive additional messages (like status update)
+                fd_set read_fds;
+                struct timeval timeout;
+                FD_ZERO(&read_fds);
+                FD_SET(tcp_fd, &read_fds);
+                timeout.tv_sec = 0;
+                timeout.tv_usec = 100000; // 100ms timeout
+                
+                if (select(tcp_fd + 1, &read_fds, NULL, NULL, &timeout) > 0) {
+                    n = recv(tcp_fd, recv_buffer, sizeof(recv_buffer) - 1, 0);
+                    if (n > 0) {
+                        recv_buffer[n] = '\0';
+                        printf("Server: %s", recv_buffer);
                     }
                 }
             }
+            
+        } else if (choice == 2 && udp_enabled) {
+            // Request molecules via UDP
+            int mol_choice;
+            while (1) {
+                show_molecule_menu();
+                if (scanf("%d", &mol_choice) != 1) { 
+                    while (getchar() != '\n'); 
+                    continue; 
+                }
+                while (getchar() != '\n');
 
-        } else if (choice == 2) {
+                if (mol_choice == 5) break;
+
+                const char *mol;
+                switch (mol_choice) {
+                    case 1: mol = "WATER"; break;
+                    case 2: mol = "CARBON DIOXIDE"; break;
+                    case 3: mol = "ALCOHOL"; break;
+                    case 4: mol = "GLUCOSE"; break;
+                    default: printf("Invalid molecule choice.\n"); continue;
+                }
+
+                printf("How many %s molecules (1-%llu): ", mol, MAX_ATOMS);
+                unsigned long long quantity;
+                if (!read_unsigned_long_long(&quantity) || quantity == 0 || quantity > MAX_ATOMS) {
+                    printf("Invalid quantity. Please try again.\n");
+                    continue;
+                }
+
+                snprintf(buffer, sizeof(buffer), "DELIVER %s %llu\n", mol, quantity);
+                if (sendto(udp_fd, buffer, strlen(buffer), 0, 
+                          (struct sockaddr*)&udp_addr, sizeof(udp_addr)) == -1) {
+                    perror("sendto");
+                    continue;
+                }
+                
+                int n = recvfrom(udp_fd, recv_buffer, sizeof(recv_buffer) - 1, 0, NULL, NULL);
+                if (n > 0) {
+                    recv_buffer[n] = '\0';
+                    printf("Server: %s", recv_buffer);
+                } else {
+                    perror("recvfrom");
+                }
+            }
+            
+        } else if (choice == 3) {
             running = 0;
         } else {
             printf("Invalid choice.\n");
@@ -213,6 +319,7 @@ int main(int argc, char *argv[]) {
     }
 
     close(tcp_fd);
+    if (udp_enabled) close(udp_fd);
     
     if (!server_connected) {
         printf("Connection to server lost.\n");

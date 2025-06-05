@@ -1,151 +1,138 @@
 === Q5 Code Coverage Report ===
-Generated on: Thu Jun  5 16:52:58 IDT 2025
+Generated on: Thu Jun  5 17:12:56 IDT 2025
 
-Lines executed:76.60% of 265
-Lines executed:79.68% of 379
-Lines executed:78.42% of 644
+Lines executed:80.00% of 265
+Lines executed:80.74% of 379
+Lines executed:80.43% of 644
 
 Coverage files (.gcov) generated:
 uds_requester.c.gcov
 uds_warehouse.c.gcov
 
 === Uncovered Lines (####) ===
-uds_requester.c.gcov:    #####:   83:        return -1;
-uds_requester.c.gcov:    #####:  133:            default:
-uds_requester.c.gcov:    #####:  134:                show_usage(argv[0]);
-uds_requester.c.gcov:    #####:  135:                exit(EXIT_FAILURE);
-uds_requester.c.gcov:    #####:  157:            fprintf(stderr, "Error: UDS stream socket file path is required (-f option)\n");
-uds_requester.c.gcov:    #####:  158:            show_usage(argv[0]);
-uds_requester.c.gcov:    #####:  159:            exit(EXIT_FAILURE);
-uds_requester.c.gcov:    #####:  191:                perror("socket");
-uds_requester.c.gcov:    #####:  192:                continue;
-uds_requester.c.gcov:    #####:  196:                close(stream_fd);
-uds_requester.c.gcov:    #####:  197:                perror("connect");
-uds_requester.c.gcov:    #####:  198:                continue;
-uds_requester.c.gcov:    #####:  205:            fprintf(stderr, "Failed to connect\n");
-uds_requester.c.gcov:    #####:  206:            freeaddrinfo(servinfo);
-uds_requester.c.gcov:    #####:  207:            exit(EXIT_FAILURE);
-uds_requester.c.gcov:    #####:  222:                perror("UDP socket creation failed");
-uds_requester.c.gcov:    #####:  223:                close(stream_fd);
-uds_requester.c.gcov:    #####:  224:                exit(EXIT_FAILURE);
-uds_requester.c.gcov:    #####:  235:            perror("UDS stream socket creation failed");
-uds_requester.c.gcov:    #####:  236:            exit(EXIT_FAILURE);
-uds_requester.c.gcov:    #####:  245:            perror("UDS stream connection failed");
-uds_requester.c.gcov:    #####:  246:            close(stream_fd);
-uds_requester.c.gcov:    #####:  247:            exit(EXIT_FAILURE);
-uds_requester.c.gcov:    #####:  256:                perror("UDS datagram socket creation failed");
-uds_requester.c.gcov:    #####:  257:                close(stream_fd);
-uds_requester.c.gcov:    #####:  258:                exit(EXIT_FAILURE);
-uds_requester.c.gcov:    #####:  274:            while (getchar() != '\n'); 
-uds_requester.c.gcov:    #####:  275:            continue; 
-uds_requester.c.gcov:    #####:  285:                    while (getchar() != '\n'); 
-uds_requester.c.gcov:    #####:  286:                    continue; 
-uds_requester.c.gcov:    #####:  297:                    default: printf("Invalid atom choice.\n"); continue;
-uds_requester.c.gcov:    #####:  303:                    printf("Invalid number.\n"); 
-uds_requester.c.gcov:    #####:  304:                    continue;
-uds_requester.c.gcov:    #####:  309:                    perror("Stream send failed");
-uds_requester.c.gcov:    #####:  310:                    server_connected = 0;
-uds_requester.c.gcov:    #####:  311:                    break;
-uds_requester.c.gcov:    #####:  317:                    if (n == 0) {
-uds_requester.c.gcov:    #####:  318:                        printf("Server disconnected.\n");
-uds_requester.c.gcov:    #####:  320:                        perror("Stream receive failed");
-uds_requester.c.gcov:    #####:  322:                    server_connected = 0;
-uds_requester.c.gcov:    #####:  323:                    break;
-uds_requester.c.gcov:    #####:  329:                        printf("Server is shutting down. Disconnecting...\n");
-uds_requester.c.gcov:    #####:  330:                        server_connected = 0;
-uds_requester.c.gcov:    #####:  331:                        break;
-uds_requester.c.gcov:    #####:  358:                    while (getchar() != '\n'); 
-uds_requester.c.gcov:    #####:  369:                    case 3: mol = "ALCOHOL"; break;
-uds_requester.c.gcov:    #####:  370:                    case 4: mol = "GLUCOSE"; break;
-uds_requester.c.gcov:    #####:  397:                        perror("UDP send failed");
-uds_requester.c.gcov:    #####:  398:                        continue;
-uds_requester.c.gcov:    #####:  406:                        perror("UDP receive failed");
-uds_requester.c.gcov:    #####:  411:                    memset(&dgram_addr, 0, sizeof(dgram_addr));
-uds_requester.c.gcov:    #####:  412:                    dgram_addr.sun_family = AF_UNIX;
-uds_requester.c.gcov:    #####:  413:                    strncpy(dgram_addr.sun_path, uds_datagram_path, sizeof(dgram_addr.sun_path) - 1);
-uds_requester.c.gcov:    #####:  415:                    if (sendto(datagram_fd, buffer, strlen(buffer), 0, 
-uds_requester.c.gcov:    #####:  417:                        perror("UDS datagram send failed");
-uds_requester.c.gcov:    #####:  418:                        continue;
-uds_requester.c.gcov:    #####:  421:                    int n = recvfrom(datagram_fd, recv_buffer, sizeof(recv_buffer) - 1, 0, NULL, NULL);
-uds_requester.c.gcov:    #####:  422:                    if (n > 0) {
-uds_requester.c.gcov:    #####:  423:                        recv_buffer[n] = '\0';
-uds_requester.c.gcov:    #####:  424:                        printf("Server: %s", recv_buffer);
-uds_requester.c.gcov:    #####:  426:                        perror("UDS datagram receive failed");
-uds_requester.c.gcov:    #####:  442:        printf("Connection to server lost.\n");
-uds_warehouse.c.gcov:    #####:   33:void timeout_handler(int sig) {
-uds_warehouse.c.gcov:    #####:   35:    timeout_occurred = 1;
-uds_warehouse.c.gcov:    #####:   36:}
-uds_warehouse.c.gcov:    #####:   72:            snprintf(response, sizeof(response), "ERROR: Amount too large, max allowed per command is %llu.\n", MAX_ATOMS);
-uds_warehouse.c.gcov:    #####:   73:            printf("Error: amount too large, max allowed per command is %llu.\n", MAX_ATOMS);
-uds_warehouse.c.gcov:    #####:   74:            send(client_fd, response, strlen(response), 0);
-uds_warehouse.c.gcov:    #####:   75:            return;
-uds_warehouse.c.gcov:    #####:   80:                snprintf(response, sizeof(response), "ERROR: Adding this would exceed CARBON storage limit (%llu).\n", MAX_ATOMS);
-uds_warehouse.c.gcov:    #####:   81:                printf("Error: adding this would exceed CARBON storage limit (%llu).\n", MAX_ATOMS);
-uds_warehouse.c.gcov:    #####:   82:                send(client_fd, response, strlen(response), 0);
-uds_warehouse.c.gcov:    #####:   83:                return;
-uds_warehouse.c.gcov:    #####:   90:                snprintf(response, sizeof(response), "ERROR: Adding this would exceed OXYGEN storage limit (%llu).\n", MAX_ATOMS);
-uds_warehouse.c.gcov:    #####:   91:                printf("Error: adding this would exceed OXYGEN storage limit (%llu).\n", MAX_ATOMS);
-uds_warehouse.c.gcov:    #####:   92:                send(client_fd, response, strlen(response), 0);
-uds_warehouse.c.gcov:    #####:   93:                return;
-uds_warehouse.c.gcov:    #####:  100:                snprintf(response, sizeof(response), "ERROR: Adding this would exceed HYDROGEN storage limit (%llu).\n", MAX_ATOMS);
-uds_warehouse.c.gcov:    #####:  101:                printf("Error: adding this would exceed HYDROGEN storage limit (%llu).\n", MAX_ATOMS);
-uds_warehouse.c.gcov:    #####:  102:                send(client_fd, response, strlen(response), 0);
-uds_warehouse.c.gcov:    #####:  103:                return;
-uds_warehouse.c.gcov:    #####:  109:            snprintf(response, sizeof(response), "ERROR: Unknown atom type: %s\n", type);
-uds_warehouse.c.gcov:    #####:  110:            printf("Unknown atom type: %s\n", type);
-uds_warehouse.c.gcov:    #####:  111:            send(client_fd, response, strlen(response), 0);
-uds_warehouse.c.gcov:    #####:  112:            return;
-uds_warehouse.c.gcov:    #####:  115:        snprintf(response, sizeof(response), "ERROR: Invalid command format: %s", cmd);
-uds_warehouse.c.gcov:    #####:  116:        printf("Invalid command: %s\n", cmd);
-uds_warehouse.c.gcov:    #####:  117:        send(client_fd, response, strlen(response), 0);
-uds_warehouse.c.gcov:    #####:  118:        return;
-uds_warehouse.c.gcov:    #####:  146:    } else if (strcmp(molecule, "ALCOHOL") == 0) {
-uds_warehouse.c.gcov:    #####:  147:        needed_c = 2 * quantity;
-uds_warehouse.c.gcov:    #####:  148:        needed_h = 6 * quantity;
-uds_warehouse.c.gcov:    #####:  149:        needed_o = 1 * quantity;
-uds_warehouse.c.gcov:    #####:  150:    } else if (strcmp(molecule, "GLUCOSE") == 0) {
-uds_warehouse.c.gcov:    #####:  151:        needed_c = 6 * quantity;
-uds_warehouse.c.gcov:    #####:  152:        needed_h = 12 * quantity;
-uds_warehouse.c.gcov:    #####:  153:        needed_o = 6 * quantity;
-uds_warehouse.c.gcov:    #####:  155:        return 0; // Unknown molecule
-uds_warehouse.c.gcov:    #####:  231:        return;
-uds_warehouse.c.gcov:    #####:  253:            } else if (sscanf(buffer, "DELIVER CARBON %31s", dioxide) == 1 && 
-uds_warehouse.c.gcov:    #####:  254:                      strcmp(dioxide, "DIOXIDE") == 0) {
-uds_warehouse.c.gcov:    #####:  255:                strcpy(molecule, "CARBON DIOXIDE");
-uds_warehouse.c.gcov:    #####:  256:                quantity = 1;
-uds_warehouse.c.gcov:    #####:  267:            snprintf(error_msg, sizeof(error_msg), "ERROR: Invalid quantity %llu (must be 1-%llu).\n", quantity, MAX_ATOMS);
-uds_warehouse.c.gcov:    #####:  268:            sendto(req_fd, error_msg, strlen(error_msg), 0, (struct sockaddr*)client_addr, addrlen);
-uds_warehouse.c.gcov:    #####:  269:            printf("Invalid quantity for %s: %llu\n", molecule, quantity);
-uds_warehouse.c.gcov:    #####:  270:            return;
-uds_warehouse.c.gcov:    #####:  296:        char error_msg[] = "Invalid DELIVER command.\n";
-uds_warehouse.c.gcov:    #####:  297:        sendto(req_fd, error_msg, strlen(error_msg), 0, (struct sockaddr*)client_addr, addrlen);
-uds_warehouse.c.gcov:    #####:  298:        printf("Invalid request command.\n");
-uds_warehouse.c.gcov:    #####:  374:            case '?':
-uds_warehouse.c.gcov:    #####:  376:                show_usage(argv[0]);
-uds_warehouse.c.gcov:    #####:  377:                exit(EXIT_FAILURE);
-uds_warehouse.c.gcov:    #####:  392:        fprintf(stderr, "Error: TCP and UDP ports must be different\n");
-uds_warehouse.c.gcov:    #####:  393:        exit(EXIT_FAILURE);
-uds_warehouse.c.gcov:    #####:  426:            perror("TCP bind");
-uds_warehouse.c.gcov:    #####:  427:            exit(1);
-uds_warehouse.c.gcov:    #####:  430:            perror("TCP listen");
-uds_warehouse.c.gcov:    #####:  431:            exit(1);
-uds_warehouse.c.gcov:    #####:  447:            perror("UDP bind");
-uds_warehouse.c.gcov:    #####:  448:            exit(1);
-uds_warehouse.c.gcov:    #####:  466:            perror("UDS stream bind");
-uds_warehouse.c.gcov:    #####:  467:            exit(1);
-uds_warehouse.c.gcov:    #####:  470:            perror("UDS stream listen");
-uds_warehouse.c.gcov:    #####:  471:            exit(1);
-uds_warehouse.c.gcov:    #####:  489:            perror("UDS datagram bind");
-uds_warehouse.c.gcov:    #####:  490:            exit(1);
-uds_warehouse.c.gcov:    #####:  510:            printf("Timeout occurred. Server shutting down.\n");
-uds_warehouse.c.gcov:    #####:  511:            break;
-uds_warehouse.c.gcov:    #####:  516:            if (timeout_occurred) break;
-uds_warehouse.c.gcov:    #####:  517:            perror("select");
-uds_warehouse.c.gcov:    #####:  518:            exit(1);
-uds_warehouse.c.gcov:    #####:  535:                            perror("TCP accept");
-uds_warehouse.c.gcov:    #####:  547:                            perror("UDS stream accept");
-uds_warehouse.c.gcov:    #####:  564:                            perror("UDP recvfrom");
-uds_warehouse.c.gcov:    #####:  565:                            continue;
-uds_warehouse.c.gcov:    #####:  576:                            perror("UDS datagram recvfrom");
-uds_warehouse.c.gcov:    #####:  577:                            continue;
-uds_warehouse.c.gcov:    #####:  607:                        else perror("recv");
+uds_requester.c.gcov:    #####:   83:    if (errno != 0 || endptr == input || (*endptr != '\n' && *endptr != '\0')) return 0;
+uds_requester.c.gcov:    #####:  133:            case 'p':
+uds_requester.c.gcov:    #####:  134:                tcp_port = atoi(optarg);
+uds_requester.c.gcov:    #####:  135:                if (tcp_port <= 0 || tcp_port > 65535) {
+uds_requester.c.gcov:    #####:  157:            default:
+uds_requester.c.gcov:    #####:  158:                show_usage(argv[0]);
+uds_requester.c.gcov:    #####:  159:                exit(EXIT_FAILURE);
+uds_requester.c.gcov:    #####:  191:    // Setup connections
+uds_requester.c.gcov:    #####:  192:    int stream_fd = -1, datagram_fd = -1;
+uds_requester.c.gcov:    #####:  222:                continue;
+uds_requester.c.gcov:    #####:  223:            }
+uds_requester.c.gcov:    #####:  224:            
+uds_requester.c.gcov:    #####:  235:        struct sockaddr_in *addr = (struct sockaddr_in *)p->ai_addr;
+uds_requester.c.gcov:    #####:  236:        inet_ntop(AF_INET, &(addr->sin_addr), server_ip, INET_ADDRSTRLEN);
+uds_requester.c.gcov:    #####:  256:        // UDS stream connection
+uds_requester.c.gcov:    #####:  257:        stream_fd = socket(AF_UNIX, SOCK_STREAM, 0);
+uds_requester.c.gcov:    #####:  258:        if (stream_fd < 0) {
+uds_requester.c.gcov:    #####:  274:        printf("Connected to UDS stream server at %s", uds_stream_path);
+uds_requester.c.gcov:    #####:  275:        
+uds_requester.c.gcov:    #####:  285:            printf(", datagram:%s", uds_datagram_path);
+uds_requester.c.gcov:    #####:  286:        }
+uds_requester.c.gcov:    #####:  297:        int choice;
+uds_requester.c.gcov:    #####:  303:
+uds_requester.c.gcov:    #####:  304:        if (choice == 1) {
+uds_requester.c.gcov:    #####:  309:                if (scanf("%d", &atom_choice) != 1) { 
+uds_requester.c.gcov:    #####:  310:                    while (getchar() != '\n'); 
+uds_requester.c.gcov:    #####:  311:                    continue; 
+uds_requester.c.gcov:    #####:  317:                const char *atom;
+uds_requester.c.gcov:    #####:  318:                switch (atom_choice) {
+uds_requester.c.gcov:    #####:  320:                    case 2: atom = "OXYGEN"; break;
+uds_requester.c.gcov:    #####:  322:                    default: printf("Invalid atom choice.\n"); continue;
+uds_requester.c.gcov:    #####:  323:                }
+uds_requester.c.gcov:    #####:  329:                    continue;
+uds_requester.c.gcov:    #####:  330:                }
+uds_requester.c.gcov:    #####:  331:
+uds_requester.c.gcov:    #####:  358:                    
+uds_requester.c.gcov:    #####:  369:                        if (n > 0) {
+uds_requester.c.gcov:    #####:  370:                            recv_buffer[n] = '\0';
+uds_requester.c.gcov:    #####:  397:                }
+uds_requester.c.gcov:    #####:  398:
+uds_requester.c.gcov:    #####:  406:                    printf("Invalid quantity. Please try again.\n");
+uds_requester.c.gcov:    #####:  411:                if (use_network) {
+uds_requester.c.gcov:    #####:  412:                    // Send via UDP
+uds_requester.c.gcov:    #####:  413:                    struct sockaddr_in udp_addr;
+uds_requester.c.gcov:    #####:  415:                    udp_addr.sin_port = htons(udp_port);
+uds_requester.c.gcov:    #####:  417:                    hostname_to_ip(server_host, server_ip);
+uds_requester.c.gcov:    #####:  418:                    inet_pton(AF_INET, server_ip, &udp_addr.sin_addr);
+uds_requester.c.gcov:    #####:  421:                              (struct sockaddr*)&udp_addr, sizeof(udp_addr)) == -1) {
+uds_requester.c.gcov:    #####:  422:                        perror("UDP send failed");
+uds_requester.c.gcov:    #####:  423:                        continue;
+uds_requester.c.gcov:    #####:  424:                    }
+uds_requester.c.gcov:    #####:  426:                    int n = recvfrom(datagram_fd, recv_buffer, sizeof(recv_buffer) - 1, 0, NULL, NULL);
+uds_requester.c.gcov:    #####:  442:                        perror("UDS datagram send failed");
+uds_warehouse.c.gcov:    #####:   72: */
+uds_warehouse.c.gcov:    #####:   73:void process_command(int client_fd, char *cmd, unsigned long long *carbon, unsigned long long *oxygen, unsigned long long *hydrogen) {
+uds_warehouse.c.gcov:    #####:   74:    char type[16];
+uds_warehouse.c.gcov:    #####:   75:    unsigned long long amount;
+uds_warehouse.c.gcov:    #####:   80:            snprintf(response, sizeof(response), "ERROR: Amount too large, max allowed per command is %llu.\n", MAX_ATOMS);
+uds_warehouse.c.gcov:    #####:   81:            printf("Error: amount too large, max allowed per command is %llu.\n", MAX_ATOMS);
+uds_warehouse.c.gcov:    #####:   82:            send(client_fd, response, strlen(response), 0);
+uds_warehouse.c.gcov:    #####:   83:            return;
+uds_warehouse.c.gcov:    #####:   90:                send(client_fd, response, strlen(response), 0);
+uds_warehouse.c.gcov:    #####:   91:                return;
+uds_warehouse.c.gcov:    #####:   92:            }
+uds_warehouse.c.gcov:    #####:   93:            *carbon += amount;
+uds_warehouse.c.gcov:    #####:  100:                send(client_fd, response, strlen(response), 0);
+uds_warehouse.c.gcov:    #####:  101:                return;
+uds_warehouse.c.gcov:    #####:  102:            }
+uds_warehouse.c.gcov:    #####:  103:            *oxygen += amount;
+uds_warehouse.c.gcov:    #####:  109:                printf("Error: adding this would exceed HYDROGEN storage limit (%llu).\n", MAX_ATOMS);
+uds_warehouse.c.gcov:    #####:  110:                send(client_fd, response, strlen(response), 0);
+uds_warehouse.c.gcov:    #####:  111:                return;
+uds_warehouse.c.gcov:    #####:  112:            }
+uds_warehouse.c.gcov:    #####:  115:            printf("Added %llu HYDROGEN.\n", amount);
+uds_warehouse.c.gcov:    #####:  116:        } else {
+uds_warehouse.c.gcov:    #####:  117:            snprintf(response, sizeof(response), "ERROR: Unknown atom type: %s\n", type);
+uds_warehouse.c.gcov:    #####:  118:            printf("Unknown atom type: %s\n", type);
+uds_warehouse.c.gcov:    #####:  146: * can_deliver - checks and performs molecule delivery
+uds_warehouse.c.gcov:    #####:  147: * returns 1 on success, 0 on failure
+uds_warehouse.c.gcov:    #####:  148: */
+uds_warehouse.c.gcov:    #####:  149:int can_deliver(const char *molecule, unsigned long long quantity, unsigned long long *carbon, unsigned long long *oxygen, unsigned long long *hydrogen) {
+uds_warehouse.c.gcov:    #####:  150:    unsigned long long needed_c = 0, needed_o = 0, needed_h = 0;
+uds_warehouse.c.gcov:    #####:  151:    
+uds_warehouse.c.gcov:    #####:  152:    if (strcmp(molecule, "WATER") == 0) {
+uds_warehouse.c.gcov:    #####:  153:        needed_h = 2 * quantity;
+uds_warehouse.c.gcov:    #####:  155:    } else if (strcmp(molecule, "CARBON DIOXIDE") == 0) {
+uds_warehouse.c.gcov:    #####:  231:        calculate_possible_molecules(carbon, oxygen, hydrogen, &water, &co2, &alcohol, &glucose);
+uds_warehouse.c.gcov:    #####:  253:    }
+uds_warehouse.c.gcov:    #####:  254:}
+uds_warehouse.c.gcov:    #####:  255:
+uds_warehouse.c.gcov:    #####:  256:/**
+uds_warehouse.c.gcov:    #####:  267:    
+uds_warehouse.c.gcov:    #####:  268:    if (parsed >= 1) {
+uds_warehouse.c.gcov:    #####:  269:        if (strcmp(molecule, "CARBON") == 0) {
+uds_warehouse.c.gcov:    #####:  270:            char dioxide[32];
+uds_warehouse.c.gcov:    #####:  296:            if (quantity == 1) {
+uds_warehouse.c.gcov:    #####:  297:                snprintf(success_msg, sizeof(success_msg), 
+uds_warehouse.c.gcov:    #####:  298:                        "Molecule delivered successfully.\n");
+uds_warehouse.c.gcov:    #####:  374:                break;
+uds_warehouse.c.gcov:    #####:  376:                oxygen = strtoull(optarg, NULL, 10);
+uds_warehouse.c.gcov:    #####:  377:                if (oxygen > MAX_ATOMS) {
+uds_warehouse.c.gcov:    #####:  392:                    fprintf(stderr, "Error: Invalid timeout: %s\n", optarg);
+uds_warehouse.c.gcov:    #####:  393:                    exit(EXIT_FAILURE);
+uds_warehouse.c.gcov:    #####:  426:    if (tcp_port != -1) printf("TCP port: %d\n", tcp_port);
+uds_warehouse.c.gcov:    #####:  427:    if (udp_port != -1) printf("UDP port: %d\n", udp_port);
+uds_warehouse.c.gcov:    #####:  430:    printf("Initial atoms - Carbon: %llu, Oxygen: %llu, Hydrogen: %llu\n", carbon, oxygen, hydrogen);
+uds_warehouse.c.gcov:    #####:  431:    
+uds_warehouse.c.gcov:    #####:  447:        if (bind(tcp_fd, (struct sockaddr*)&tcp_addr, sizeof(tcp_addr)) < 0) {
+uds_warehouse.c.gcov:    #####:  448:            perror("TCP bind");
+uds_warehouse.c.gcov:    #####:  466:        udp_addr.sin_port = htons(udp_port);
+uds_warehouse.c.gcov:    #####:  467:        
+uds_warehouse.c.gcov:    #####:  470:            exit(1);
+uds_warehouse.c.gcov:    #####:  471:        }
+uds_warehouse.c.gcov:    #####:  489:            exit(1);
+uds_warehouse.c.gcov:    #####:  490:        }
+uds_warehouse.c.gcov:    #####:  510:        if (bind(uds_datagram_fd, (struct sockaddr*)&datagram_addr, sizeof(datagram_addr)) < 0) {
+uds_warehouse.c.gcov:    #####:  511:            perror("UDS datagram bind");
+uds_warehouse.c.gcov:    #####:  517:    // Setup select
+uds_warehouse.c.gcov:    #####:  518:    FD_ZERO(&master_set);
+uds_warehouse.c.gcov:    #####:  535:        
+uds_warehouse.c.gcov:    #####:  547:        
+uds_warehouse.c.gcov:    #####:  564:                    } else {
+uds_warehouse.c.gcov:    #####:  565:                        struct sockaddr_un client_addr;
+uds_warehouse.c.gcov:    #####:  576:                } else if (i == udp_fd || i == uds_datagram_fd) {
+uds_warehouse.c.gcov:    #####:  577:                    // Handle datagram request (UDP or UDS)
+uds_warehouse.c.gcov:    #####:  607:                    char input[BUFFER_SIZE];

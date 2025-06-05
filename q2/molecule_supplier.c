@@ -6,8 +6,6 @@
  * Features:
  * - Accepts TCP connections for adding atoms (ADD CARBON/OXYGEN/HYDROGEN).
  * - Accepts UDP requests for molecule delivery (DELIVER WATER, DELIVER ALCOHOL, etc.).
- * - Manages atom counts with overflow protection.
- * - Handles multiple simultaneous clients using select().
  * - Gracefully shuts down when admin types 'shutdown', notifying TCP clients before closing.
  *
  * Usage:

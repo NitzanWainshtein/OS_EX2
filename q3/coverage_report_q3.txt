@@ -1,0 +1,60 @@
+=== Q3 Code Coverage Report ===
+Generated on: Thu Jun  5 15:14:26 IDT 2025
+
+Lines executed:80.65% of 248
+Lines executed:80.65% of 248
+
+Note: molecule_requester built from Q2 source
+
+Coverage files (.gcov) generated:
+bar_drinks.c.gcov
+
+=== Uncovered Lines (####) ===
+    #####:   59:            snprintf(response, sizeof(response), "ERROR: Amount too large, max allowed per command is %llu.\n", MAX_ATOMS);
+    #####:   60:            printf("Error: amount too large, max allowed per command is %llu.\n", MAX_ATOMS);
+    #####:   61:            send(client_fd, response, strlen(response), 0);
+    #####:   96:            snprintf(response, sizeof(response), "ERROR: Unknown atom type: %s\n", type);
+    #####:   97:            printf("Unknown atom type: %s\n", type);
+    #####:   98:            send(client_fd, response, strlen(response), 0);
+    #####:   99:            return;
+    #####:  102:        snprintf(response, sizeof(response), "ERROR: Invalid command format: %s", cmd);
+    #####:  103:        printf("Invalid command: %s\n", cmd);
+    #####:  104:        send(client_fd, response, strlen(response), 0);
+    #####:  105:        return;
+    #####:  154:        return 0; // Unknown molecule
+    #####:  180:        unsigned long long from_hydrogen = hydrogen / 2;
+    #####:  181:        unsigned long long from_oxygen = oxygen;
+    #####:  182:        *water = (from_hydrogen < from_oxygen) ? from_hydrogen : from_oxygen;
+    #####:  188:        unsigned long long from_carbon = carbon;
+    #####:  189:        unsigned long long from_oxygen = oxygen / 2;
+    #####:  190:        *co2 = (from_carbon < from_oxygen) ? from_carbon : from_oxygen;
+    #####:  196:        unsigned long long from_carbon = carbon / 2;
+    #####:  197:        unsigned long long from_hydrogen = hydrogen / 6;
+    #####:  198:        unsigned long long from_oxygen = oxygen;
+    #####:  199:        *alcohol = min3(from_carbon, from_hydrogen, from_oxygen);
+    #####:  205:        unsigned long long from_carbon = carbon / 6;
+    #####:  206:        unsigned long long from_hydrogen = hydrogen / 12;
+    #####:  207:        unsigned long long from_oxygen = oxygen / 6;
+    #####:  208:        *glucose = min3(from_carbon, from_hydrogen, from_oxygen);
+    #####:  249:        return;
+    #####:  304:        perror("TCP listen");
+    #####:  305:        exit(1);
+    #####:  318:            perror("UDP bind");
+    #####:  319:            exit(1);
+    #####:  336:        printf("Bar Drinks server running on TCP port %d (UDP disabled)\n", tcp_port);
+    #####:  344:            perror("select");
+    #####:  345:            exit(1);
+    #####:  356:                        perror("accept");
+    #####:  371:                        perror("recvfrom");
+    #####:  372:                        continue;
+    #####:  389:                            } else if (sscanf(buffer, "DELIVER CARBON %31s", dioxide) == 1 && 
+    #####:  390:                                      strcmp(dioxide, "DIOXIDE") == 0) {
+    #####:  391:                                strcpy(molecule, "CARBON DIOXIDE");
+    #####:  392:                                quantity = 1;
+    #####:  403:                            snprintf(error_msg, sizeof(error_msg), "ERROR: Invalid quantity %llu (must be 1-%llu).\n", quantity, MAX_ATOMS);
+    #####:  404:                            sendto(udp_fd, error_msg, strlen(error_msg), 0,
+    #####:  406:                            printf("Invalid quantity for %s: %llu\n", molecule, quantity);
+    #####:  407:                            continue;
+    #####:  434:                        char error_msg[] = "Invalid DELIVER command.\n";
+    #####:  435:                        sendto(udp_fd, error_msg, strlen(error_msg), 0,
+    #####:  437:                        printf("Invalid UDP command.\n");

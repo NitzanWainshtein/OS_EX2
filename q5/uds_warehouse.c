@@ -26,21 +26,28 @@
 #define BUFFER_SIZE 256
 #define MAX_ATOMS 1000000000000000000ULL
 
-// Global flag for timeout
+// Global variable for timeout
 volatile int timeout_occurred = 0;
 
-// Signal handler for alarm
+/**
+ * timeout_handler - handles the timeout signal
+ */
 void timeout_handler(int sig) {
-    (void)sig;  // Suppress unused parameter warning
+    (void)sig;  // Prevent compiler warning
     timeout_occurred = 1;
 }
 
-// Helper function to find minimum of three values
+/**
+ * min3 - finds the minimum among 3 values
+ */
 unsigned long long min3(unsigned long long a, unsigned long long b, unsigned long long c) {
     unsigned long long min_ab = (a < b) ? a : b;
     return (min_ab < c) ? min_ab : c;
 }
 
+/**
+ * show_usage - displays usage instructions
+ */
 void show_usage(const char *program_name) {
     printf("Usage: %s [network options] [uds options] [general options]\n\n", program_name);
     printf("Network options:\n");
@@ -60,7 +67,8 @@ void show_usage(const char *program_name) {
 }
 
 /**
- * process_command - Enhanced with detailed client feedback
+ * process_command - processes ADD commands received from clients
+ * enhanced with detailed feedback to client
  */
 void process_command(int client_fd, char *cmd, unsigned long long *carbon, unsigned long long *oxygen, unsigned long long *hydrogen) {
     char type[16];
@@ -134,6 +142,10 @@ void process_command(int client_fd, char *cmd, unsigned long long *carbon, unsig
     send(client_fd, status_msg, strlen(status_msg), 0);
 }
 
+/**
+ * can_deliver - checks and performs molecule delivery
+ * returns 1 on success, 0 on failure
+ */
 int can_deliver(const char *molecule, unsigned long long quantity, unsigned long long *carbon, unsigned long long *oxygen, unsigned long long *hydrogen) {
     unsigned long long needed_c = 0, needed_o = 0, needed_h = 0;
     
@@ -165,6 +177,9 @@ int can_deliver(const char *molecule, unsigned long long quantity, unsigned long
     return 0;
 }
 
+/**
+ * calculate_possible_molecules - calculates how many molecules can be produced
+ */
 void calculate_possible_molecules(unsigned long long carbon, unsigned long long oxygen, unsigned long long hydrogen,
                                  unsigned long long *water, unsigned long long *co2, 
                                  unsigned long long *alcohol, unsigned long long *glucose) {
@@ -204,6 +219,9 @@ void calculate_possible_molecules(unsigned long long carbon, unsigned long long 
     }
 }
 
+/**
+ * process_drink_command - processes drink commands from administrator
+ */
 void process_drink_command(char *cmd, unsigned long long carbon, unsigned long long oxygen, unsigned long long hydrogen) {
     char *newline = strchr(cmd, '\n');
     if (newline) *newline = '\0';
@@ -227,7 +245,7 @@ void process_drink_command(char *cmd, unsigned long long carbon, unsigned long l
         printf("Can produce %llu CHAMPAGNE(s) (needs: WATER + CARBON DIOXIDE + GLUCOSE)\n", possible_champagne);
         
     } else if (strcmp(cmd, "shutdown") == 0) {
-        // השרת יטפל ב-shutdown בלולאה הראשית
+        // Server will handle shutdown in main loop
         return;
     } else {
         printf("Unknown command: %s\n", cmd);
@@ -235,6 +253,9 @@ void process_drink_command(char *cmd, unsigned long long carbon, unsigned long l
     }
 }
 
+/**
+ * handle_molecule_request - handles molecule requests via UDP/UDS datagram
+ */
 void handle_molecule_request(char *buffer, int req_fd, void *client_addr, socklen_t addrlen, 
                            unsigned long long *carbon, unsigned long long *oxygen, unsigned long long *hydrogen, int is_uds) {
     printf("Received molecule request: %s\n", buffer);
@@ -261,7 +282,7 @@ void handle_molecule_request(char *buffer, int req_fd, void *client_addr, sockle
             quantity = 1;
         }
         
-        // STRICT quantity validation - NO default fallback
+        // ✅ Strict quantity validation - no defaults
         if (quantity == 0 || quantity > MAX_ATOMS) {
             char error_msg[BUFFER_SIZE];
             snprintf(error_msg, sizeof(error_msg), "ERROR: Invalid quantity %llu (must be 1-%llu).\n", quantity, MAX_ATOMS);
@@ -320,6 +341,7 @@ int main(int argc, char *argv[]) {
         {0, 0, 0, 0}
     };
     
+    // Parse arguments
     int opt;
     while ((opt = getopt_long(argc, argv, "T:U:s:d:c:o:H:t:", long_options, NULL)) != -1) {
         switch (opt) {
@@ -378,7 +400,7 @@ int main(int argc, char *argv[]) {
         }
     }
     
-    // Check that we have either network ports or UDS paths
+    // Check that we have either ports or UDS paths
     int has_network = (tcp_port != -1) || (udp_port != -1);
     int has_uds = (stream_path != NULL) || (datagram_path != NULL);
     
@@ -393,7 +415,7 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
     
-    // Setup timeout if specified
+    // Set timeout if needed
     if (timeout_seconds > 0) {
         signal(SIGALRM, timeout_handler);
         alarm(timeout_seconds);
@@ -593,7 +615,7 @@ int main(int argc, char *argv[]) {
                                     close(j);
                                 }
                             }
-                            goto shutdown_cleanup; // יציאה נקייה מהלולאה
+                            goto shutdown_cleanup; // Clean exit from loop
                         } else {
                             process_drink_command(input, carbon, oxygen, hydrogen);
                         }
@@ -617,7 +639,7 @@ int main(int argc, char *argv[]) {
     }
     
 shutdown_cleanup:
-    // Cleanup
+    // Cleanup resources
     if (tcp_fd != -1) close(tcp_fd);
     if (udp_fd != -1) close(udp_fd);
     if (uds_stream_fd != -1) {

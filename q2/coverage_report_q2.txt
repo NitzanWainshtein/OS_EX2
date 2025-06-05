@@ -1,0 +1,60 @@
+=== Q2 Code Coverage Report ===
+Generated on: Thu Jun  5 14:40:18 IDT 2025
+
+Lines executed:80.86% of 162
+Lines executed:90.50% of 179
+Lines executed:85.92% of 341
+
+Coverage files (.gcov) generated:
+molecule_requester.c.gcov
+molecule_supplier.c.gcov
+
+=== Uncovered Lines (####) ===
+molecule_requester.c.gcov:    #####:   68:    strcpy(ip, inet_ntoa(*((struct in_addr*)he->h_addr)));
+molecule_requester.c.gcov:    #####:   69:    return 0;
+molecule_requester.c.gcov:    #####:   81:        fprintf(stderr, "Usage: %s <server_ip_or_hostname> <tcp_port> [udp_port]\n", argv[0]);
+molecule_requester.c.gcov:    #####:   82:        exit(EXIT_FAILURE);
+molecule_requester.c.gcov:    #####:  110:        perror("TCP socket creation failed");
+molecule_requester.c.gcov:    #####:  111:        exit(EXIT_FAILURE);
+molecule_requester.c.gcov:    #####:  118:        fprintf(stderr, "Invalid IP address: %s\n", server_ip);
+molecule_requester.c.gcov:    #####:  119:        close(tcp_fd);
+molecule_requester.c.gcov:    #####:  120:        exit(EXIT_FAILURE);
+molecule_requester.c.gcov:    #####:  135:            perror("UDP socket creation failed");
+molecule_requester.c.gcov:    #####:  136:            close(tcp_fd);
+molecule_requester.c.gcov:    #####:  137:            exit(EXIT_FAILURE);
+molecule_requester.c.gcov:    #####:  143:            fprintf(stderr, "Invalid IP address for UDP: %s\n", server_ip);
+molecule_requester.c.gcov:    #####:  144:            close(tcp_fd);
+molecule_requester.c.gcov:    #####:  145:            close(udp_fd);
+molecule_requester.c.gcov:    #####:  146:            exit(EXIT_FAILURE);
+molecule_requester.c.gcov:    #####:  197:                    perror("TCP send failed");
+molecule_requester.c.gcov:    #####:  198:                    server_connected = 0;
+molecule_requester.c.gcov:    #####:  199:                    break;
+molecule_requester.c.gcov:    #####:  204:                    if (n == 0) {
+molecule_requester.c.gcov:    #####:  205:                        printf("Server disconnected.\n");
+molecule_requester.c.gcov:    #####:  207:                        perror("TCP receive failed");
+molecule_requester.c.gcov:    #####:  209:                    server_connected = 0;
+molecule_requester.c.gcov:    #####:  210:                    break;
+molecule_requester.c.gcov:    #####:  217:                        printf("Server is shutting down. Disconnecting...\n");
+molecule_requester.c.gcov:    #####:  218:                        server_connected = 0;
+molecule_requester.c.gcov:    #####:  219:                        break;
+molecule_requester.c.gcov:    #####:  257:                    perror("UDP send failed");
+molecule_requester.c.gcov:    #####:  258:                    continue;
+molecule_requester.c.gcov:    #####:  266:                    perror("UDP receive failed");
+molecule_requester.c.gcov:    #####:  282:        printf("Connection to server lost.\n");
+molecule_supplier.c.gcov:    #####:   69:                printf("Error: adding this would exceed HYDROGEN storage limit (%llu).\n", MAX_ATOMS);
+molecule_supplier.c.gcov:    #####:   70:                return;
+molecule_supplier.c.gcov:    #####:  177:        perror("TCP bind");
+molecule_supplier.c.gcov:    #####:  178:        exit(1);
+molecule_supplier.c.gcov:    #####:  181:        perror("TCP listen");
+molecule_supplier.c.gcov:    #####:  182:        exit(1);
+molecule_supplier.c.gcov:    #####:  195:            perror("UDP bind");
+molecule_supplier.c.gcov:    #####:  196:            exit(1);
+molecule_supplier.c.gcov:    #####:  221:            perror("select");
+molecule_supplier.c.gcov:    #####:  222:            exit(1);
+molecule_supplier.c.gcov:    #####:  233:                        perror("accept");
+molecule_supplier.c.gcov:    #####:  248:                        perror("recvfrom");
+molecule_supplier.c.gcov:    #####:  249:                        continue;
+molecule_supplier.c.gcov:    #####:  285:                                snprintf(success_msg, sizeof(success_msg), 
+molecule_supplier.c.gcov:    #####:  316:                                    send(j, "Server shutting down.\n", strlen("Server shutting down.\n"), 0);
+molecule_supplier.c.gcov:    #####:  317:                                    close(j);
+molecule_supplier.c.gcov:    #####:  332:                        else perror("recv");

@@ -1,0 +1,128 @@
+=== Q4 Code Coverage Report ===
+Generated on: Thu Jun  5 15:57:33 IDT 2025
+Lines executed:72.61% of 314
+Lines executed:81.68% of 191
+Lines executed:76.04% of 505
+
+=== Uncovered Lines (####) ===
+bar_drinks_update.c.gcov:    #####:   41:void timeout_handler(int sig) {
+bar_drinks_update.c.gcov:    #####:   43:    timeout_occurred = 1;
+bar_drinks_update.c.gcov:    #####:   44:}
+bar_drinks_update.c.gcov:    #####:   81:            snprintf(response, sizeof(response), "ERROR: Amount too large, max allowed per command is %llu.\n", MAX_ATOMS);
+bar_drinks_update.c.gcov:    #####:   82:            printf("Error: amount too large, max allowed per command is %llu.\n", MAX_ATOMS);
+bar_drinks_update.c.gcov:    #####:   83:            send(client_fd, response, strlen(response), 0);
+bar_drinks_update.c.gcov:    #####:  109:                snprintf(response, sizeof(response), "ERROR: Adding this would exceed HYDROGEN storage limit (%llu).\n", MAX_ATOMS);
+bar_drinks_update.c.gcov:    #####:  110:                printf("Error: adding this would exceed HYDROGEN storage limit (%llu).\n", MAX_ATOMS);       
+bar_drinks_update.c.gcov:    #####:  111:                send(client_fd, response, strlen(response), 0);
+bar_drinks_update.c.gcov:    #####:  112:                return;
+bar_drinks_update.c.gcov:    #####:  118:            snprintf(response, sizeof(response), "ERROR: Unknown atom type: %s\n", type);
+bar_drinks_update.c.gcov:    #####:  119:            printf("Unknown atom type: %s\n", type);
+bar_drinks_update.c.gcov:    #####:  120:            send(client_fd, response, strlen(response), 0);
+bar_drinks_update.c.gcov:    #####:  121:            return;
+bar_drinks_update.c.gcov:    #####:  124:        snprintf(response, sizeof(response), "ERROR: Invalid command format: %s", cmd);
+bar_drinks_update.c.gcov:    #####:  125:        printf("Invalid command: %s\n", cmd);
+bar_drinks_update.c.gcov:    #####:  126:        send(client_fd, response, strlen(response), 0);
+bar_drinks_update.c.gcov:    #####:  127:        return;
+bar_drinks_update.c.gcov:    #####:  164:        return 0; // Unknown molecule
+bar_drinks_update.c.gcov:    #####:  184:        unsigned long long from_hydrogen = hydrogen / 2;
+bar_drinks_update.c.gcov:    #####:  185:        unsigned long long from_oxygen = oxygen;
+bar_drinks_update.c.gcov:    #####:  186:        *water = (from_hydrogen < from_oxygen) ? from_hydrogen : from_oxygen;
+bar_drinks_update.c.gcov:    #####:  192:        unsigned long long from_carbon = carbon;
+bar_drinks_update.c.gcov:    #####:  193:        unsigned long long from_oxygen = oxygen / 2;
+bar_drinks_update.c.gcov:    #####:  194:        *co2 = (from_carbon < from_oxygen) ? from_carbon : from_oxygen;
+bar_drinks_update.c.gcov:    #####:  200:        unsigned long long from_carbon = carbon / 2;
+bar_drinks_update.c.gcov:    #####:  201:        unsigned long long from_hydrogen = hydrogen / 6;
+bar_drinks_update.c.gcov:    #####:  202:        unsigned long long from_oxygen = oxygen;
+bar_drinks_update.c.gcov:    #####:  203:        *alcohol = min3(from_carbon, from_hydrogen, from_oxygen);
+bar_drinks_update.c.gcov:    #####:  209:        unsigned long long from_carbon = carbon / 6;
+bar_drinks_update.c.gcov:    #####:  210:        unsigned long long from_hydrogen = hydrogen / 12;
+bar_drinks_update.c.gcov:    #####:  211:        unsigned long long from_oxygen = oxygen / 6;
+bar_drinks_update.c.gcov:    #####:  212:        *glucose = min3(from_carbon, from_hydrogen, from_oxygen);
+bar_drinks_update.c.gcov:    #####:  239:        return;
+bar_drinks_update.c.gcov:    #####:  270:                    fprintf(stderr, "Error: Invalid TCP port: %s\n", optarg);
+bar_drinks_update.c.gcov:    #####:  271:                    exit(EXIT_FAILURE);
+bar_drinks_update.c.gcov:    #####:  277:                    fprintf(stderr, "Error: Invalid UDP port: %s\n", optarg);
+bar_drinks_update.c.gcov:    #####:  278:                    exit(EXIT_FAILURE);
+bar_drinks_update.c.gcov:    #####:  284:                    fprintf(stderr, "Error: Initial carbon atoms too large (max: %llu)\n", MAX_ATOMS);       
+bar_drinks_update.c.gcov:    #####:  285:                    exit(EXIT_FAILURE);
+bar_drinks_update.c.gcov:    #####:  291:                    fprintf(stderr, "Error: Initial oxygen atoms too large (max: %llu)\n", MAX_ATOMS);       
+bar_drinks_update.c.gcov:    #####:  292:                    exit(EXIT_FAILURE);
+bar_drinks_update.c.gcov:    #####:  298:                    fprintf(stderr, "Error: Initial hydrogen atoms too large (max: %llu)\n", MAX_ATOMS);     
+bar_drinks_update.c.gcov:    #####:  299:                    exit(EXIT_FAILURE);
+bar_drinks_update.c.gcov:    #####:  305:                    fprintf(stderr, "Error: Invalid timeout: %s\n", optarg);
+bar_drinks_update.c.gcov:    #####:  306:                    exit(EXIT_FAILURE);
+bar_drinks_update.c.gcov:    #####:  309:            case '?':
+bar_drinks_update.c.gcov:    #####:  311:                show_usage(argv[0]);
+bar_drinks_update.c.gcov:    #####:  312:                exit(EXIT_FAILURE);
+bar_drinks_update.c.gcov:    #####:  324:        fprintf(stderr, "Error: UDP port is required (-U option)\n");
+bar_drinks_update.c.gcov:    #####:  325:        show_usage(argv[0]);
+bar_drinks_update.c.gcov:    #####:  326:        exit(EXIT_FAILURE);
+bar_drinks_update.c.gcov:    #####:  330:        fprintf(stderr, "Error: TCP and UDP ports must be different\n");
+bar_drinks_update.c.gcov:    #####:  331:        exit(EXIT_FAILURE);
+bar_drinks_update.c.gcov:    #####:  361:        perror("TCP bind");
+bar_drinks_update.c.gcov:    #####:  362:        exit(1);
+bar_drinks_update.c.gcov:    #####:  365:        perror("TCP listen");
+bar_drinks_update.c.gcov:    #####:  366:        exit(1);
+bar_drinks_update.c.gcov:    #####:  379:        perror("UDP bind");
+bar_drinks_update.c.gcov:    #####:  380:        exit(1);
+bar_drinks_update.c.gcov:    #####:  398:            printf("Timeout occurred. Server shutting down.\n");
+bar_drinks_update.c.gcov:    #####:  399:            break;
+bar_drinks_update.c.gcov:    #####:  404:            if (timeout_occurred) break;
+bar_drinks_update.c.gcov:    #####:  405:            perror("select");
+bar_drinks_update.c.gcov:    #####:  406:            exit(1);
+bar_drinks_update.c.gcov:    #####:  422:                        perror("accept");
+bar_drinks_update.c.gcov:    #####:  437:                        perror("recvfrom");
+bar_drinks_update.c.gcov:    #####:  438:                        continue;
+bar_drinks_update.c.gcov:    #####:  454:                            } else if (sscanf(buffer, "DELIVER CARBON %31s", dioxide) == 1 &&
+bar_drinks_update.c.gcov:    #####:  455:                                      strcmp(dioxide, "DIOXIDE") == 0) {
+bar_drinks_update.c.gcov:    #####:  456:                                strcpy(molecule, "CARBON DIOXIDE");
+bar_drinks_update.c.gcov:    #####:  457:                                quantity = 1;
+bar_drinks_update.c.gcov:    #####:  468:                            snprintf(error_msg, sizeof(error_msg), "ERROR: Invalid quantity %llu (must be 1-%llu).\n", quantity, MAX_ATOMS);
+bar_drinks_update.c.gcov:    #####:  469:                            sendto(udp_fd, error_msg, strlen(error_msg), 0,
+bar_drinks_update.c.gcov:    #####:  471:                            printf("Invalid quantity for %s: %llu\n", molecule, quantity);
+bar_drinks_update.c.gcov:    #####:  472:                            continue;
+bar_drinks_update.c.gcov:    #####:  499:                        char error_msg[] = "Invalid DELIVER command.\n";
+bar_drinks_update.c.gcov:    #####:  500:                        sendto(udp_fd, error_msg, strlen(error_msg), 0,
+bar_drinks_update.c.gcov:    #####:  502:                        printf("Invalid UDP command.\n");
+bar_drinks_update.c.gcov:    #####:  512:                                    send(j, "Server shutting down.\n", strlen("Server shutting down.\n"), 0);
+bar_drinks_update.c.gcov:    #####:  513:                                    close(j);
+bar_drinks_update.c.gcov:    #####:  530:                        else perror("recv");
+bar_drinks_update.c.gcov:    #####:  543:    close(tcp_fd);
+bar_drinks_update.c.gcov:    #####:  544:    close(udp_fd);
+bar_drinks_update.c.gcov:    #####:  545:    printf("Server terminated.\n");
+bar_drinks_update.c.gcov:    #####:  546:    return 0;
+molecule_requester_update.c.gcov:    #####:   90:                    fprintf(stderr, "Error: Invalid TCP port: %s\n", optarg);
+molecule_requester_update.c.gcov:    #####:   91:                    exit(EXIT_FAILURE);
+molecule_requester_update.c.gcov:    #####:   97:                    fprintf(stderr, "Error: Invalid UDP port: %s\n", optarg);
+molecule_requester_update.c.gcov:    #####:   98:                    exit(EXIT_FAILURE);
+molecule_requester_update.c.gcov:    #####:  102:            default:
+molecule_requester_update.c.gcov:    #####:  103:                show_usage(argv[0]);
+molecule_requester_update.c.gcov:    #####:  104:                exit(EXIT_FAILURE);
+molecule_requester_update.c.gcov:    #####:  128:        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+molecule_requester_update.c.gcov:    #####:  129:        exit(EXIT_FAILURE);
+molecule_requester_update.c.gcov:    #####:  135:            perror("socket");
+molecule_requester_update.c.gcov:    #####:  136:            continue;
+molecule_requester_update.c.gcov:    #####:  140:            close(tcp_fd);
+molecule_requester_update.c.gcov:    #####:  141:            perror("connect");
+molecule_requester_update.c.gcov:    #####:  142:            continue;
+molecule_requester_update.c.gcov:    #####:  149:        fprintf(stderr, "Failed to connect\n");
+molecule_requester_update.c.gcov:    #####:  150:        freeaddrinfo(servinfo);
+molecule_requester_update.c.gcov:    #####:  151:        exit(EXIT_FAILURE);
+molecule_requester_update.c.gcov:    #####:  168:            perror("UDP socket");
+molecule_requester_update.c.gcov:    #####:  169:            close(tcp_fd);
+molecule_requester_update.c.gcov:    #####:  170:            exit(EXIT_FAILURE);
+molecule_requester_update.c.gcov:    #####:  228:                    perror("send");
+molecule_requester_update.c.gcov:    #####:  229:                    server_connected = 0;
+molecule_requester_update.c.gcov:    #####:  230:                    break;
+molecule_requester_update.c.gcov:    #####:  236:                    if (n == 0) printf("Server disconnected.\n");
+molecule_requester_update.c.gcov:    #####:  237:                    else perror("recv");
+molecule_requester_update.c.gcov:    #####:  238:                    server_connected = 0;
+molecule_requester_update.c.gcov:    #####:  239:                    break;
+molecule_requester_update.c.gcov:    #####:  247:                    printf("Server is shutting down. Disconnecting...\n");
+molecule_requester_update.c.gcov:    #####:  248:                    server_connected = 0;
+molecule_requester_update.c.gcov:    #####:  249:                    break;
+molecule_requester_update.c.gcov:    #####:  275:                    while (getchar() != '\n');
+molecule_requester_update.c.gcov:    #####:  301:                    perror("sendto");
+molecule_requester_update.c.gcov:    #####:  302:                    continue;
+molecule_requester_update.c.gcov:    #####:  310:                    perror("recvfrom");
+molecule_requester_update.c.gcov:    #####:  325:        printf("Connection to server lost.\n");

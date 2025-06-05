@@ -246,8 +246,8 @@ int main(int argc, char *argv[]) {
                 printf("How many %s molecules to request (1-%llu): ", mol, MAX_ATOMS);
                 unsigned long long quantity;
                 if (!read_unsigned_long_long(&quantity) || quantity == 0 || quantity > MAX_ATOMS) {
-                    printf("Invalid quantity. Using default quantity of 1.\n");
-                    quantity = 1;
+                    printf("Invalid quantity. Please try again.\n");
+                    continue;
                 }
 
                 snprintf(buffer, sizeof(buffer), "DELIVER %s %llu\n", mol, quantity);

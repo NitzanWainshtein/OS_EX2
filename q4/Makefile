@@ -20,6 +20,9 @@ coverage-report:
 	@echo "" >> coverage_report_q4.txt
 	@echo "Coverage files (.gcov) generated:" >> coverage_report_q4.txt
 	@ls *.gcov >> coverage_report_q4.txt 2>/dev/null || echo "No .gcov files found" >> coverage_report_q4.txt
+	@echo "" >> coverage_report_q4.txt
+	@echo "=== Uncovered Lines (####) ===" >> coverage_report_q4.txt
+	@grep "####" *.gcov >> coverage_report_q4.txt 2>/dev/null || echo "All lines covered!" >> coverage_report_q4.txt
 	@echo "Coverage report saved to coverage_report_q4.txt"
 
 clean:

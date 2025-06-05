@@ -1,7 +1,8 @@
 /**
  * bar_drinks_update.c - Q4
  * 
- * Advanced warehouse server with command line options and timeout support.
+ * Advanced warehouse server with command line options, timeout support,
+ * and comprehensive client feedback.
  * 
  * Usage:
  *   ./bar_drinks_update -T <tcp_port> -U <udp_port> [options]
@@ -13,7 +14,7 @@
  * Optional options:
  *   -c, --carbon NUM        Initial carbon atoms (default: 0)
  *   -o, --oxygen NUM        Initial oxygen atoms (default: 0)
- *   -h, --hydrogen NUM      Initial hydrogen atoms (default: 0)
+ *   -H, --hydrogen NUM      Initial hydrogen atoms (default: 0)
  *   -t, --timeout SEC       Timeout in seconds (default: no timeout)
  */
 
@@ -62,50 +63,84 @@ void show_usage(const char *program_name) {
     printf("  %s -T 12345 -U 12346 -c 100 -o 200 -H 300 -t 60\n", program_name);
 }
 
-void process_command(char *cmd, unsigned long long *carbon, unsigned long long *oxygen, unsigned long long *hydrogen) {
+/**
+ * process_command
+ *
+ * Parses and executes an ADD command received over TCP with detailed client feedback.
+ * Supported format: ADD <ATOM_TYPE> <AMOUNT>
+ * Updates the warehouse counts if the command is valid.
+ * Prints updated warehouse status.
+ */
+void process_command(int client_fd, char *cmd, unsigned long long *carbon, unsigned long long *oxygen, unsigned long long *hydrogen) {
     char type[16];
     unsigned long long amount;
+    char response[BUFFER_SIZE];
 
     if (sscanf(cmd, "ADD %15s %llu", type, &amount) == 2) {
         if (amount > MAX_ATOMS) {
+            snprintf(response, sizeof(response), "ERROR: Amount too large, max allowed per command is %llu.\n", MAX_ATOMS);
             printf("Error: amount too large, max allowed per command is %llu.\n", MAX_ATOMS);
+            send(client_fd, response, strlen(response), 0);
             return;
         }
 
         if (strcmp(type, "CARBON") == 0) {
             if (*carbon + amount > MAX_ATOMS) {
+                snprintf(response, sizeof(response), "ERROR: Adding this would exceed CARBON storage limit (%llu).\n", MAX_ATOMS);
                 printf("Error: adding this would exceed CARBON storage limit (%llu).\n", MAX_ATOMS);
+                send(client_fd, response, strlen(response), 0);
                 return;
             }
             *carbon += amount;
+            snprintf(response, sizeof(response), "SUCCESS: Added %llu CARBON. Total CARBON: %llu\n", amount, *carbon);
             printf("Added %llu CARBON.\n", amount);
         } else if (strcmp(type, "OXYGEN") == 0) {
             if (*oxygen + amount > MAX_ATOMS) {
+                snprintf(response, sizeof(response), "ERROR: Adding this would exceed OXYGEN storage limit (%llu).\n", MAX_ATOMS);
                 printf("Error: adding this would exceed OXYGEN storage limit (%llu).\n", MAX_ATOMS);
+                send(client_fd, response, strlen(response), 0);
                 return;
             }
             *oxygen += amount;
+            snprintf(response, sizeof(response), "SUCCESS: Added %llu OXYGEN. Total OXYGEN: %llu\n", amount, *oxygen);
             printf("Added %llu OXYGEN.\n", amount);
         } else if (strcmp(type, "HYDROGEN") == 0) {
             if (*hydrogen + amount > MAX_ATOMS) {
+                snprintf(response, sizeof(response), "ERROR: Adding this would exceed HYDROGEN storage limit (%llu).\n", MAX_ATOMS);
                 printf("Error: adding this would exceed HYDROGEN storage limit (%llu).\n", MAX_ATOMS);
+                send(client_fd, response, strlen(response), 0);
                 return;
             }
             *hydrogen += amount;
+            snprintf(response, sizeof(response), "SUCCESS: Added %llu HYDROGEN. Total HYDROGEN: %llu\n", amount, *hydrogen);
             printf("Added %llu HYDROGEN.\n", amount);
         } else {
+            snprintf(response, sizeof(response), "ERROR: Unknown atom type: %s\n", type);
             printf("Unknown atom type: %s\n", type);
+            send(client_fd, response, strlen(response), 0);
             return;
         }
     } else {
+        snprintf(response, sizeof(response), "ERROR: Invalid command format: %s", cmd);
         printf("Invalid command: %s\n", cmd);
+        send(client_fd, response, strlen(response), 0);
         return;
     }
 
+    // Send success response
+    send(client_fd, response, strlen(response), 0);
+    
+    // Print current status to server console
     printf("Current warehouse status:\n");
     printf("CARBON: %llu\n", *carbon);
     printf("OXYGEN: %llu\n", *oxygen);
     printf("HYDROGEN: %llu\n", *hydrogen);
+    
+    // Send warehouse status to client
+    char status_msg[BUFFER_SIZE];
+    snprintf(status_msg, sizeof(status_msg), "Status: CARBON: %llu, OXYGEN: %llu, HYDROGEN: %llu\n", 
+             *carbon, *oxygen, *hydrogen);
+    send(client_fd, status_msg, strlen(status_msg), 0);
 }
 
 int can_deliver(const char *molecule, unsigned long long quantity, unsigned long long *carbon, unsigned long long *oxygen, unsigned long long *hydrogen) {
@@ -427,6 +462,16 @@ int main(int argc, char *argv[]) {
                             quantity = 1;
                         }
                         
+                        // Validate quantity - STRICT validation, NO default fallback
+                        if (quantity == 0 || quantity > MAX_ATOMS) {
+                            char error_msg[BUFFER_SIZE];
+                            snprintf(error_msg, sizeof(error_msg), "ERROR: Invalid quantity %llu (must be 1-%llu).\n", quantity, MAX_ATOMS);
+                            sendto(udp_fd, error_msg, strlen(error_msg), 0,
+                                   (struct sockaddr*)&client_addr, addrlen);
+                            printf("Invalid quantity for %s: %llu\n", molecule, quantity);
+                            continue;
+                        }
+                        
                         if (can_deliver(molecule, quantity, &carbon, &oxygen, &hydrogen)) {
                             char success_msg[BUFFER_SIZE];
                             if (quantity == 1) {
@@ -487,8 +532,7 @@ int main(int argc, char *argv[]) {
                         FD_CLR(i, &master_set);
                     } else {
                         buffer[nbytes] = '\0';
-                        process_command(buffer, &carbon, &oxygen, &hydrogen);
-                        send(i, "Command processed.\n", strlen("Command processed.\n"), 0);
+                        process_command(i, buffer, &carbon, &oxygen, &hydrogen);
                     }
                 }
             }
