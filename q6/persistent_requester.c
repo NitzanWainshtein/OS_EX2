@@ -1,38 +1,12 @@
 /**
- * persistent_requester.c - Q6 Client
- * 
- * Enhanced client with UDS support for both stream and datagram communication
- * Features proper server response handling and comprehensive input validation
- * 
- * Features:
- * - Support for both network (TCP/UDP) and UDS (stream/datagram) connections
- * - Interactive menu system for atom management and molecule requests
- * - Comprehensive input validation with proper error handling
- * - Real-time server response display including inventory status
- * - Graceful connection handling and cleanup
+ * persistent_requester.c - Q6 Client - FIXED VERSION
+ *
+ * Client with UDS support (both stream and datagram)
+ * Enhanced with proper server response handling and FIXED input validation
  * 
  * Usage:
- *   Network mode:
- *     ./persistent_requester -h <hostname/IP> -p <tcp_port> [-u <udp_port>]
- *   UDS mode:
- *     ./persistent_requester -f <UDS_stream_path> [-d <UDS_datagram_path>]
- * 
- * Options:
- *   -h, --host HOST         Server hostname or IP address
- *   -p, --port PORT         TCP port for stream connection
- *   -u, --udp-port PORT     UDP port for datagram requests (enables molecule menu)
- *   -f, --file PATH         UDS stream socket file path
- *   -d, --datagram PATH     UDS datagram socket file path (enables molecule menu)
- * 
- * Interactive Commands:
- *   1. Add atoms           - Add CARBON, OXYGEN, or HYDROGEN atoms
- *   2. Request molecules   - Request WATER, CO2, ALCOHOL, or GLUCOSE (if enabled)
- *   3. Quit               - Exit the program
- * 
- * Examples:
- *   ./persistent_requester -h 127.0.0.1 -p 12345 -u 12346
- *   ./persistent_requester -f /tmp/stream.sock -d /tmp/datagram.sock
- *   ./persistent_requester -f /tmp/stream.sock
+ *   ./persistent_requester -h <hostname/IP> -p <tcp_port> [-u <udp_port>]
+ *   ./persistent_requester -f <UDS_stream_path> [-d <UDS_datagram_path>]
  */
 
 #include <stdio.h>
@@ -52,8 +26,7 @@
 #define MAX_ATOMS 1000000000000000000ULL
 
 /**
- * show_usage - Displays usage instructions
- * @program_name: Name of the program executable
+ * show_usage - displays usage instructions
  */
 void show_usage(const char *program_name) {
     printf("Usage: %s [network options] [uds options]\n\n", program_name);
@@ -71,8 +44,7 @@ void show_usage(const char *program_name) {
 }
 
 /**
- * show_main_menu - Displays the main menu
- * @molecule_enabled: Whether molecule requests are available
+ * show_main_menu - displays the main menu
  */
 void show_main_menu(int molecule_enabled) {
     printf("\n=== PERSISTENT WAREHOUSE CLIENT ===\n");
@@ -83,7 +55,7 @@ void show_main_menu(int molecule_enabled) {
 }
 
 /**
- * show_atom_menu - Displays the atoms menu
+ * show_atom_menu - displays the atoms menu
  */
 void show_atom_menu() {
     printf("\n--- ADD ATOMS ---\n");
@@ -91,7 +63,7 @@ void show_atom_menu() {
 }
 
 /**
- * show_molecule_menu - Displays the molecules menu
+ * show_molecule_menu - displays the molecules menu
  */
 void show_molecule_menu() {
     printf("\n--- REQUEST MOLECULE ---\n");
@@ -99,33 +71,39 @@ void show_molecule_menu() {
 }
 
 /**
- * read_unsigned_long_long - Reads a positive number from user
- * @result: Pointer to store the result
- * 
- * Validates user input to ensure it's a valid positive number.
- * 
- * Returns: 1 on success, 0 on failure
+ * read_unsigned_long_long - FIXED VERSION - reads a positive number from user
+ * returns 1 on success, 0 on failure
  */
 int read_unsigned_long_long(unsigned long long *result) {
     char input[BUFFER_SIZE];
-    if (!fgets(input, sizeof(input), stdin)) return 0;
+    
+    if (!fgets(input, sizeof(input), stdin)) {
+        return 0;
+    }
+    
+    // Remove newline
+    char *newline = strchr(input, '\n');
+    if (newline) *newline = '\0';
+    
+    // Skip empty input
+    if (strlen(input) == 0) {
+        return 0;
+    }
+    
     char *endptr;
     errno = 0;
     unsigned long long value = strtoull(input, &endptr, 10);
-    if (errno != 0 || endptr == input || (*endptr != '\n' && *endptr != '\0')) return 0;
+    
+    if (errno != 0 || endptr == input || *endptr != '\0') {
+        return 0;
+    }
+    
     *result = value;
     return 1;
 }
 
 /**
- * hostname_to_ip - Converts hostname to IP address
- * @hostname: Hostname or IP address string
- * @ip: Buffer to store the resolved IP address
- * 
- * Uses gethostbyname() to resolve hostnames to IP addresses.
- * If the input is already an IP address, it's copied directly.
- * 
- * Returns: 0 on success, -1 on failure
+ * hostname_to_ip - converts hostname to IP
  */
 int hostname_to_ip(const char *hostname, char *ip) {
     struct hostent *he;
@@ -146,12 +124,7 @@ int hostname_to_ip(const char *hostname, char *ip) {
 }
 
 /**
- * is_shutdown_message - Checks if the server is shutting down
- * @msg: Message from server
- * 
- * Detects shutdown messages from the server to handle graceful disconnection.
- * 
- * Returns: 1 if shutdown message detected, 0 otherwise
+ * is_shutdown_message - checks if the server is shutting down
  */
 int is_shutdown_message(const char *msg) {
     return (strstr(msg, "shutting down") != NULL || 
@@ -160,14 +133,7 @@ int is_shutdown_message(const char *msg) {
 }
 
 /**
- * wait_for_additional_messages - Waits for additional server messages
- * @stream_fd: Stream socket file descriptor
- * @timeout_ms: Timeout in milliseconds
- * 
- * Uses select() to wait for additional messages from the server with a timeout.
- * This helps capture status updates and multi-part responses.
- * 
- * Returns: 1 if additional data is available, 0 if timeout
+ * wait_for_additional_messages - waits for additional server messages
  */
 int wait_for_additional_messages(int stream_fd, int timeout_ms) {
     fd_set read_fds;
@@ -259,7 +225,7 @@ int main(int argc, char *argv[]) {
     int molecule_enabled = 0;
     
     if (use_network) {
-        // TCP connection using getaddrinfo (as required in specification)
+        // TCP connection using getaddrinfo
         struct addrinfo hints, *servinfo, *p;
         int rv;
         
@@ -470,14 +436,23 @@ int main(int argc, char *argv[]) {
                         continue;
                 }
 
-                // Strict quantity validation - no defaults for invalid values
-                unsigned long long quantity;
-                while (1) {
+                // FIXED quantity validation - no infinite loop!
+                unsigned long long quantity = 1; // Default value
+                int attempts = 0;
+                int max_attempts = 3;
+                
+                while (attempts < max_attempts) {
                     printf("How many %s molecules to request (1-%llu): ", mol, MAX_ATOMS);
                     if (read_unsigned_long_long(&quantity) && quantity > 0 && quantity <= MAX_ATOMS) {
                         break;
                     }
-                    printf("Invalid quantity. Please enter a positive number up to %llu.\n", MAX_ATOMS);
+                    attempts++;
+                    if (attempts < max_attempts) {
+                        printf("Invalid quantity. Please try again.\n");
+                    } else {
+                        printf("Too many invalid attempts. Using default quantity: 1\n");
+                        quantity = 1;
+                    }
                 }
 
                 snprintf(buffer, sizeof(buffer), "DELIVER %s %llu\n", mol, quantity);

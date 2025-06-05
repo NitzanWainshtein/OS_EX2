@@ -113,24 +113,24 @@
         -:  112: * show_usage - Displays program usage instructions
         -:  113: * @program_name: Name of the program executable
         -:  114: */
-        2:  115:void show_usage(const char *program_name) {
-        2:  116:    printf("Usage: %s [network options] [uds options] [general options]\n\n", program_name);
-        2:  117:    printf("Network options:\n");
-        2:  118:    printf("  -T, --tcp-port PORT     TCP port\n");
-        2:  119:    printf("  -U, --udp-port PORT     UDP port\n\n");
-        2:  120:    printf("UDS options:\n");
-        2:  121:    printf("  -s, --stream-path PATH  UDS stream socket path\n");
-        2:  122:    printf("  -d, --datagram-path PATH UDS datagram socket path\n\n");
-        2:  123:    printf("General options:\n");
-        2:  124:    printf("  -f, --save-file PATH    Save file path (required)\n");
-        2:  125:    printf("  -c, --carbon NUM        Initial carbon atoms (default: 0)\n");
-        2:  126:    printf("  -o, --oxygen NUM        Initial oxygen atoms (default: 0)\n");
-        2:  127:    printf("  -H, --hydrogen NUM      Initial hydrogen atoms (default: 0)\n");
-        2:  128:    printf("  -t, --timeout SEC       Timeout in seconds (default: no timeout)\n");
-        2:  129:    printf("\nExamples:\n");
-        2:  130:    printf("  %s -T 12345 -U 12346 -f /tmp/inventory.dat\n", program_name);
-        2:  131:    printf("  %s -s /tmp/stream.sock -d /tmp/datagram.sock -f /tmp/inventory.dat\n", program_name);
-        2:  132:}
+        4:  115:void show_usage(const char *program_name) {
+        4:  116:    printf("Usage: %s [network options] [uds options] [general options]\n\n", program_name);
+        4:  117:    printf("Network options:\n");
+        4:  118:    printf("  -T, --tcp-port PORT     TCP port\n");
+        4:  119:    printf("  -U, --udp-port PORT     UDP port\n\n");
+        4:  120:    printf("UDS options:\n");
+        4:  121:    printf("  -s, --stream-path PATH  UDS stream socket path\n");
+        4:  122:    printf("  -d, --datagram-path PATH UDS datagram socket path\n\n");
+        4:  123:    printf("General options:\n");
+        4:  124:    printf("  -f, --save-file PATH    Save file path (required)\n");
+        4:  125:    printf("  -c, --carbon NUM        Initial carbon atoms (default: 0)\n");
+        4:  126:    printf("  -o, --oxygen NUM        Initial oxygen atoms (default: 0)\n");
+        4:  127:    printf("  -H, --hydrogen NUM      Initial hydrogen atoms (default: 0)\n");
+        4:  128:    printf("  -t, --timeout SEC       Timeout in seconds (default: no timeout)\n");
+        4:  129:    printf("\nExamples:\n");
+        4:  130:    printf("  %s -T 12345 -U 12346 -f /tmp/inventory.dat\n", program_name);
+        4:  131:    printf("  %s -s /tmp/stream.sock -d /tmp/datagram.sock -f /tmp/inventory.dat\n", program_name);
+        4:  132:}
         -:  133:
         -:  134:/**
         -:  135: * init_inventory_file - Initializes or loads the inventory from a file
@@ -641,12 +641,12 @@
         -:  640: * 
         -:  641: * Returns: 0 on success, non-zero on error
         -:  642: */
-        5:  643:int main(int argc, char *argv[]) {
+        7:  643:int main(int argc, char *argv[]) {
         -:  644:    // Default values
-        5:  645:    int tcp_port = -1, udp_port = -1;
-        5:  646:    char *stream_path = NULL, *datagram_path = NULL;
-        5:  647:    unsigned long long carbon = 0, oxygen = 0, hydrogen = 0;
-        5:  648:    int timeout_seconds = 0;
+        7:  645:    int tcp_port = -1, udp_port = -1;
+        7:  646:    char *stream_path = NULL, *datagram_path = NULL;
+        7:  647:    unsigned long long carbon = 0, oxygen = 0, hydrogen = 0;
+        7:  648:    int timeout_seconds = 0;
         -:  649:    
         -:  650:    // Long options
         -:  651:    static struct option long_options[] = {
@@ -664,15 +664,15 @@
         -:  663:    };
         -:  664:    
         -:  665:    int opt;
-        8:  666:    while ((opt = getopt_long(argc, argv, "T:U:s:d:f:c:o:H:t:", long_options, NULL)) != -1) {
-        6:  667:        switch (opt) {
-        3:  668:            case 'T':
-        3:  669:                tcp_port = atoi(optarg);
-        3:  670:                if (tcp_port <= 0 || tcp_port > 65535) {
+       12:  666:    while ((opt = getopt_long(argc, argv, "T:U:s:d:f:c:o:H:t:", long_options, NULL)) != -1) {
+        8:  667:        switch (opt) {
+        4:  668:            case 'T':
+        4:  669:                tcp_port = atoi(optarg);
+        4:  670:                if (tcp_port <= 0 || tcp_port > 65535) {
         2:  671:                    fprintf(stderr, "Error: Invalid TCP port: %s\n", optarg);
         2:  672:                    exit(EXIT_FAILURE);
         -:  673:                }
-        1:  674:                break;
+        2:  674:                break;
         1:  675:            case 'U':
         1:  676:                udp_port = atoi(optarg);
         1:  677:                if (udp_port <= 0 || udp_port > 65535) {
@@ -686,9 +686,9 @@
     #####:  685:            case 'd':
     #####:  686:                datagram_path = strdup(optarg);
     #####:  687:                break;
-        1:  688:            case 'f':
-        1:  689:                save_file_path = strdup(optarg);
-        1:  690:                break;
+        2:  688:            case 'f':
+        2:  689:                save_file_path = strdup(optarg);
+        2:  690:                break;
     #####:  691:            case 'c':
     #####:  692:                carbon = strtoull(optarg, NULL, 10);
     #####:  693:                if (carbon > MAX_ATOMS) {
@@ -725,20 +725,20 @@
         -:  724:    }
         -:  725:    
         -:  726:    // Save file is required
-        2:  727:    if (!save_file_path) {
-        1:  728:        fprintf(stderr, "Error: Save file path is required (-f option)\n");
-        1:  729:        show_usage(argv[0]);
-        1:  730:        exit(EXIT_FAILURE);
+        4:  727:    if (!save_file_path) {
+        2:  728:        fprintf(stderr, "Error: Save file path is required (-f option)\n");
+        2:  729:        show_usage(argv[0]);
+        2:  730:        exit(EXIT_FAILURE);
         -:  731:    }
         -:  732:    
         -:  733:    // Check that we have either network ports or UDS paths
-       1*:  734:    int has_network = (tcp_port != -1) || (udp_port != -1);
-       1*:  735:    int has_uds = (stream_path != NULL) || (datagram_path != NULL);
+        2:  734:    int has_network = (tcp_port != -1) || (udp_port != -1);
+       2*:  735:    int has_uds = (stream_path != NULL) || (datagram_path != NULL);
         -:  736:    
-       1*:  737:    if (!has_network && !has_uds) {
-    #####:  738:        fprintf(stderr, "Error: Must specify either network ports (-T/-U) or UDS paths (-s/-d)\n");
-    #####:  739:        show_usage(argv[0]);
-    #####:  740:        exit(EXIT_FAILURE);
+        2:  737:    if (!has_network && !has_uds) {
+        1:  738:        fprintf(stderr, "Error: Must specify either network ports (-T/-U) or UDS paths (-s/-d)\n");
+        1:  739:        show_usage(argv[0]);
+        1:  740:        exit(EXIT_FAILURE);
         -:  741:    }
         -:  742:    
         1:  743:    if (tcp_port != -1 && udp_port != -1 && tcp_port == udp_port) {
