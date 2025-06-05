@@ -1,0 +1,551 @@
+        -:    0:Source:persistent_requester.c
+        -:    1:/**
+        -:    2: * persistent_requester.c - Q6 Client
+        -:    3: * 
+        -:    4: * Enhanced client with UDS support for both stream and datagram communication
+        -:    5: * Features proper server response handling and comprehensive input validation
+        -:    6: * 
+        -:    7: * Features:
+        -:    8: * - Support for both network (TCP/UDP) and UDS (stream/datagram) connections
+        -:    9: * - Interactive menu system for atom management and molecule requests
+        -:   10: * - Comprehensive input validation with proper error handling
+        -:   11: * - Real-time server response display including inventory status
+        -:   12: * - Graceful connection handling and cleanup
+        -:   13: * 
+        -:   14: * Usage:
+        -:   15: *   Network mode:
+        -:   16: *     ./persistent_requester -h <hostname/IP> -p <tcp_port> [-u <udp_port>]
+        -:   17: *   UDS mode:
+        -:   18: *     ./persistent_requester -f <UDS_stream_path> [-d <UDS_datagram_path>]
+        -:   19: * 
+        -:   20: * Options:
+        -:   21: *   -h, --host HOST         Server hostname or IP address
+        -:   22: *   -p, --port PORT         TCP port for stream connection
+        -:   23: *   -u, --udp-port PORT     UDP port for datagram requests (enables molecule menu)
+        -:   24: *   -f, --file PATH         UDS stream socket file path
+        -:   25: *   -d, --datagram PATH     UDS datagram socket file path (enables molecule menu)
+        -:   26: * 
+        -:   27: * Interactive Commands:
+        -:   28: *   1. Add atoms           - Add CARBON, OXYGEN, or HYDROGEN atoms
+        -:   29: *   2. Request molecules   - Request WATER, CO2, ALCOHOL, or GLUCOSE (if enabled)
+        -:   30: *   3. Quit               - Exit the program
+        -:   31: * 
+        -:   32: * Examples:
+        -:   33: *   ./persistent_requester -h 127.0.0.1 -p 12345 -u 12346
+        -:   34: *   ./persistent_requester -f /tmp/stream.sock -d /tmp/datagram.sock
+        -:   35: *   ./persistent_requester -f /tmp/stream.sock
+        -:   36: */
+        -:   37:
+        -:   38:#include <stdio.h>
+        -:   39:#include <stdlib.h>
+        -:   40:#include <string.h>
+        -:   41:#include <unistd.h>
+        -:   42:#include <getopt.h>
+        -:   43:#include <sys/types.h>
+        -:   44:#include <sys/socket.h>
+        -:   45:#include <sys/un.h>
+        -:   46:#include <netinet/in.h>
+        -:   47:#include <arpa/inet.h>
+        -:   48:#include <errno.h>
+        -:   49:#include <netdb.h>
+        -:   50:
+        -:   51:#define BUFFER_SIZE 256
+        -:   52:#define MAX_ATOMS 1000000000000000000ULL
+        -:   53:
+        -:   54:/**
+        -:   55: * show_usage - Displays usage instructions
+        -:   56: * @program_name: Name of the program executable
+        -:   57: */
+        4:   58:void show_usage(const char *program_name) {
+        4:   59:    printf("Usage: %s [network options] [uds options]\n\n", program_name);
+        4:   60:    printf("Network options:\n");
+        4:   61:    printf("  -h, --host HOST         Server hostname or IP address\n");
+        4:   62:    printf("  -p, --port PORT         TCP port\n");
+        4:   63:    printf("  -u, --udp-port PORT     UDP port (enables molecule requests)\n\n");
+        4:   64:    printf("UDS options:\n");
+        4:   65:    printf("  -f, --file PATH         UDS stream socket file path\n");
+        4:   66:    printf("  -d, --datagram PATH     UDS datagram socket file path (enables molecule requests)\n");
+        4:   67:    printf("\nExamples:\n");
+        4:   68:    printf("  %s -h 127.0.0.1 -p 12345 -u 12346\n", program_name);
+        4:   69:    printf("  %s -f /tmp/stream.sock -d /tmp/datagram.sock\n", program_name);
+        4:   70:    printf("  %s -f /tmp/stream.sock\n", program_name);
+        4:   71:}
+        -:   72:
+        -:   73:/**
+        -:   74: * show_main_menu - Displays the main menu
+        -:   75: * @molecule_enabled: Whether molecule requests are available
+        -:   76: */
+       15:   77:void show_main_menu(int molecule_enabled) {
+       15:   78:    printf("\n=== PERSISTENT WAREHOUSE CLIENT ===\n");
+       15:   79:    printf("1. Add atoms\n");
+       15:   80:    if (molecule_enabled) printf("2. Request molecule delivery\n");
+       15:   81:    printf("3. Quit\n");
+       15:   82:    printf("Your choice: ");
+       15:   83:}
+        -:   84:
+        -:   85:/**
+        -:   86: * show_atom_menu - Displays the atoms menu
+        -:   87: */
+       20:   88:void show_atom_menu() {
+       20:   89:    printf("\n--- ADD ATOMS ---\n");
+       20:   90:    printf("1. CARBON\n2. OXYGEN\n3. HYDROGEN\n4. Back\nYour choice: ");
+       20:   91:}
+        -:   92:
+        -:   93:/**
+        -:   94: * show_molecule_menu - Displays the molecules menu
+        -:   95: */
+        5:   96:void show_molecule_menu() {
+        5:   97:    printf("\n--- REQUEST MOLECULE ---\n");
+        5:   98:    printf("1. WATER\n2. CARBON DIOXIDE\n3. ALCOHOL\n4. GLUCOSE\n5. Back\nYour choice: ");
+        5:   99:}
+        -:  100:
+        -:  101:/**
+        -:  102: * read_unsigned_long_long - Reads a positive number from user
+        -:  103: * @result: Pointer to store the result
+        -:  104: * 
+        -:  105: * Validates user input to ensure it's a valid positive number.
+        -:  106: * 
+        -:  107: * Returns: 1 on success, 0 on failure
+        -:  108: */
+       13:  109:int read_unsigned_long_long(unsigned long long *result) {
+        -:  110:    char input[BUFFER_SIZE];
+      13*:  111:    if (!fgets(input, sizeof(input), stdin)) return 0;
+        -:  112:    char *endptr;
+       13:  113:    errno = 0;
+       13:  114:    unsigned long long value = strtoull(input, &endptr, 10);
+      13*:  115:    if (errno != 0 || endptr == input || (*endptr != '\n' && *endptr != '\0')) return 0;
+       12:  116:    *result = value;
+       12:  117:    return 1;
+        -:  118:}
+        -:  119:
+        -:  120:/**
+        -:  121: * hostname_to_ip - Converts hostname to IP address
+        -:  122: * @hostname: Hostname or IP address string
+        -:  123: * @ip: Buffer to store the resolved IP address
+        -:  124: * 
+        -:  125: * Uses gethostbyname() to resolve hostnames to IP addresses.
+        -:  126: * If the input is already an IP address, it's copied directly.
+        -:  127: * 
+        -:  128: * Returns: 0 on success, -1 on failure
+        -:  129: */
+        4:  130:int hostname_to_ip(const char *hostname, char *ip) {
+        -:  131:    struct hostent *he;
+        -:  132:    struct in_addr addr;
+        -:  133:    
+        4:  134:    if (inet_aton(hostname, &addr)) {
+    #####:  135:        strcpy(ip, hostname);
+    #####:  136:        return 0;
+        -:  137:    }
+        -:  138:    
+        4:  139:    he = gethostbyname(hostname);
+        4:  140:    if (he == NULL) {
+    #####:  141:        return -1;
+        -:  142:    }
+        -:  143:    
+        4:  144:    strcpy(ip, inet_ntoa(*((struct in_addr*)he->h_addr)));
+        4:  145:    return 0;
+        -:  146:}
+        -:  147:
+        -:  148:/**
+        -:  149: * is_shutdown_message - Checks if the server is shutting down
+        -:  150: * @msg: Message from server
+        -:  151: * 
+        -:  152: * Detects shutdown messages from the server to handle graceful disconnection.
+        -:  153: * 
+        -:  154: * Returns: 1 if shutdown message detected, 0 otherwise
+        -:  155: */
+        8:  156:int is_shutdown_message(const char *msg) {
+       16:  157:    return (strstr(msg, "shutting down") != NULL || 
+      16*:  158:            strstr(msg, "shutdown") != NULL ||
+        8:  159:            strstr(msg, "closing") != NULL);
+        -:  160:}
+        -:  161:
+        -:  162:/**
+        -:  163: * wait_for_additional_messages - Waits for additional server messages
+        -:  164: * @stream_fd: Stream socket file descriptor
+        -:  165: * @timeout_ms: Timeout in milliseconds
+        -:  166: * 
+        -:  167: * Uses select() to wait for additional messages from the server with a timeout.
+        -:  168: * This helps capture status updates and multi-part responses.
+        -:  169: * 
+        -:  170: * Returns: 1 if additional data is available, 0 if timeout
+        -:  171: */
+        8:  172:int wait_for_additional_messages(int stream_fd, int timeout_ms) {
+        -:  173:    fd_set read_fds;
+        -:  174:    struct timeval timeout;
+        -:  175:    
+      136:  176:    FD_ZERO(&read_fds);
+        8:  177:    FD_SET(stream_fd, &read_fds);
+        8:  178:    timeout.tv_sec = timeout_ms / 1000;
+        8:  179:    timeout.tv_usec = (timeout_ms % 1000) * 1000;
+        -:  180:    
+        8:  181:    return select(stream_fd + 1, &read_fds, NULL, NULL, &timeout) > 0;
+        -:  182:}
+        -:  183:
+       15:  184:int main(int argc, char *argv[]) {
+        -:  185:    // Configuration variables
+       15:  186:    char *server_host = NULL;
+       15:  187:    int tcp_port = -1, udp_port = -1;
+       15:  188:    char *uds_stream_path = NULL, *uds_datagram_path = NULL;
+       15:  189:    int use_uds = 0, use_network = 0;
+        -:  190:    
+        -:  191:    // Parse arguments
+        -:  192:    int opt;
+       40:  193:    while ((opt = getopt(argc, argv, "h:p:u:f:d:")) != -1) {
+       28:  194:        switch (opt) {
+       10:  195:            case 'h':
+       10:  196:                server_host = optarg;
+       10:  197:                use_network = 1;
+       10:  198:                break;
+       10:  199:            case 'p':
+       10:  200:                tcp_port = atoi(optarg);
+       10:  201:                if (tcp_port <= 0 || tcp_port > 65535) {
+        2:  202:                    fprintf(stderr, "Error: Invalid TCP port: %s\n", optarg);
+        2:  203:                    exit(EXIT_FAILURE);
+        -:  204:                }
+        8:  205:                use_network = 1;
+        8:  206:                break;
+        4:  207:            case 'u':
+        4:  208:                udp_port = atoi(optarg);
+        4:  209:                if (udp_port <= 0 || udp_port > 65535) {
+    #####:  210:                    fprintf(stderr, "Error: Invalid UDP port: %s\n", optarg);
+    #####:  211:                    exit(EXIT_FAILURE);
+        -:  212:                }
+        4:  213:                use_network = 1;
+        4:  214:                break;
+        3:  215:            case 'f':
+        3:  216:                uds_stream_path = optarg;
+        3:  217:                use_uds = 1;
+        3:  218:                break;
+    #####:  219:            case 'd':
+    #####:  220:                uds_datagram_path = optarg;
+    #####:  221:                use_uds = 1;
+    #####:  222:                break;
+        1:  223:            default:
+        1:  224:                show_usage(argv[0]);
+        1:  225:                exit(EXIT_FAILURE);
+        -:  226:        }
+        -:  227:    }
+        -:  228:    
+        -:  229:    // Validate arguments
+       12:  230:    if (use_uds && use_network) {
+        1:  231:        fprintf(stderr, "Error: Cannot use both UDS socket files and network address/port\n");
+        1:  232:        exit(EXIT_FAILURE);
+        -:  233:    }
+        -:  234:    
+       11:  235:    if (use_network) {
+        8:  236:        if (!server_host || tcp_port == -1) {
+        2:  237:            fprintf(stderr, "Error: Server hostname/IP and TCP port are required for network connection\n");
+        2:  238:            show_usage(argv[0]);
+        2:  239:            exit(EXIT_FAILURE);
+        -:  240:        }
+        6:  241:        if (udp_port != -1 && tcp_port == udp_port) {
+        1:  242:            fprintf(stderr, "Error: TCP and UDP ports must be different\n");
+        1:  243:            exit(EXIT_FAILURE);
+        -:  244:        }
+        3:  245:    } else if (use_uds) {
+        2:  246:        if (!uds_stream_path) {
+    #####:  247:            fprintf(stderr, "Error: UDS stream socket file path is required (-f option)\n");
+    #####:  248:            show_usage(argv[0]);
+    #####:  249:            exit(EXIT_FAILURE);
+        -:  250:        }
+        -:  251:    } else {
+        1:  252:        fprintf(stderr, "Error: Must specify either network connection or UDS connection\n");
+        1:  253:        show_usage(argv[0]);
+        1:  254:        exit(EXIT_FAILURE);
+        -:  255:    }
+        -:  256:    
+        -:  257:    // Setup connections
+        7:  258:    int stream_fd = -1, datagram_fd = -1;
+        7:  259:    int molecule_enabled = 0;
+        -:  260:    
+        7:  261:    if (use_network) {
+        -:  262:        // TCP connection using getaddrinfo (as required in specification)
+        -:  263:        struct addrinfo hints, *servinfo, *p;
+        -:  264:        int rv;
+        -:  265:        
+        5:  266:        memset(&hints, 0, sizeof hints);
+        5:  267:        hints.ai_family = AF_INET;
+        5:  268:        hints.ai_socktype = SOCK_STREAM;
+        -:  269:        
+        -:  270:        char port_str[6];
+        5:  271:        snprintf(port_str, sizeof(port_str), "%d", tcp_port);
+        -:  272:        
+        5:  273:        if ((rv = getaddrinfo(server_host, port_str, &hints, &servinfo)) != 0) {
+    #####:  274:            fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+    #####:  275:            exit(EXIT_FAILURE);
+        -:  276:        }
+        -:  277:        
+        -:  278:        // Connection attempt
+       5*:  279:        for(p = servinfo; p != NULL; p = p->ai_next) {
+       5*:  280:            if ((stream_fd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1) {
+    #####:  281:                perror("socket");
+    #####:  282:                continue;
+        -:  283:            }
+        -:  284:            
+       5*:  285:            if (connect(stream_fd, p->ai_addr, p->ai_addrlen) == -1) {
+    #####:  286:                close(stream_fd);
+    #####:  287:                perror("connect");
+    #####:  288:                continue;
+        -:  289:            }
+        -:  290:            
+        5:  291:            break;
+        -:  292:        }
+        -:  293:        
+        5:  294:        if (p == NULL) {
+    #####:  295:            fprintf(stderr, "Failed to connect to server\n");
+    #####:  296:            freeaddrinfo(servinfo);
+    #####:  297:            exit(EXIT_FAILURE);
+        -:  298:        }
+        -:  299:        
+        -:  300:        char server_ip[INET_ADDRSTRLEN];
+        5:  301:        struct sockaddr_in *addr = (struct sockaddr_in *)p->ai_addr;
+        5:  302:        inet_ntop(AF_INET, &(addr->sin_addr), server_ip, INET_ADDRSTRLEN);
+        -:  303:        
+        5:  304:        freeaddrinfo(servinfo);
+        -:  305:        
+        5:  306:        printf("Connected to TCP server at %s:%d", server_ip, tcp_port);
+        -:  307:        
+        -:  308:        // UDP connection (optional)
+        5:  309:        if (udp_port != -1) {
+        3:  310:            datagram_fd = socket(AF_INET, SOCK_DGRAM, 0);
+        3:  311:            if (datagram_fd < 0) {
+    #####:  312:                perror("UDP socket creation failed");
+    #####:  313:                close(stream_fd);
+    #####:  314:                exit(EXIT_FAILURE);
+        -:  315:            }
+        3:  316:            molecule_enabled = 1;
+        3:  317:            printf(", UDP:%d", udp_port);
+        -:  318:        }
+        5:  319:        printf("\n");
+        -:  320:        
+        -:  321:    } else {
+        -:  322:        // UDS stream connection
+        2:  323:        stream_fd = socket(AF_UNIX, SOCK_STREAM, 0);
+        2:  324:        if (stream_fd < 0) {
+    #####:  325:            perror("UDS stream socket creation failed");
+    #####:  326:            exit(EXIT_FAILURE);
+        -:  327:        }
+        -:  328:        
+        -:  329:        struct sockaddr_un stream_addr;
+        2:  330:        memset(&stream_addr, 0, sizeof(stream_addr));
+        2:  331:        stream_addr.sun_family = AF_UNIX;
+        2:  332:        strncpy(stream_addr.sun_path, uds_stream_path, sizeof(stream_addr.sun_path) - 1);
+        -:  333:        
+        2:  334:        if (connect(stream_fd, (struct sockaddr*)&stream_addr, sizeof(stream_addr)) < 0) {
+        1:  335:            perror("UDS stream connection failed");
+        1:  336:            close(stream_fd);
+        1:  337:            exit(EXIT_FAILURE);
+        -:  338:        }
+        -:  339:        
+        1:  340:        printf("Connected to UDS stream server at %s", uds_stream_path);
+        -:  341:        
+        -:  342:        // UDS datagram connection (optional)
+        1:  343:        if (uds_datagram_path) {
+    #####:  344:            datagram_fd = socket(AF_UNIX, SOCK_DGRAM, 0);
+    #####:  345:            if (datagram_fd < 0) {
+    #####:  346:                perror("UDS datagram socket creation failed");
+    #####:  347:                close(stream_fd);
+    #####:  348:                exit(EXIT_FAILURE);
+        -:  349:            }
+    #####:  350:            molecule_enabled = 1;
+    #####:  351:            printf(", datagram:%s", uds_datagram_path);
+        -:  352:        }
+        1:  353:        printf("\n");
+        -:  354:    }
+        -:  355:
+        -:  356:    // Read and display welcome message
+        -:  357:    char recv_buffer[BUFFER_SIZE];
+        6:  358:    int n = recv(stream_fd, recv_buffer, sizeof(recv_buffer) - 1, 0);
+        6:  359:    if (n > 0) {
+        6:  360:        recv_buffer[n] = '\0';
+        6:  361:        printf("Server: %s", recv_buffer);
+        -:  362:    }
+        -:  363:
+        -:  364:    // Main program loop
+        6:  365:    int running = 1;
+        6:  366:    int server_connected = 1;
+        -:  367:    char buffer[BUFFER_SIZE];
+        -:  368:    
+       21:  369:    while (running && server_connected) {
+       15:  370:        show_main_menu(molecule_enabled);
+        -:  371:        int choice;
+       15:  372:        if (scanf("%d", &choice) != 1) { 
+        8:  373:            while (getchar() != '\n'); 
+        1:  374:            printf("Invalid input. Please enter a number.\n");
+        1:  375:            continue; 
+        -:  376:        }
+       14:  377:        while (getchar() != '\n');
+        -:  378:
+       14:  379:        if (choice == 1) {
+        -:  380:            // Add atoms (via stream connection)
+        -:  381:            int atom_choice;
+       20:  382:            while (server_connected) {
+       20:  383:                show_atom_menu();
+       20:  384:                if (scanf("%d", &atom_choice) != 1) { 
+        8:  385:                    while (getchar() != '\n'); 
+        1:  386:                    printf("Invalid input. Please enter a number.\n");
+        6:  387:                    continue; 
+        -:  388:                }
+       19:  389:                while (getchar() != '\n');
+        -:  390:
+       19:  391:                if (atom_choice == 4) break;
+        -:  392:
+        -:  393:                const char *atom;
+       13:  394:                switch (atom_choice) {
+        5:  395:                    case 1: atom = "CARBON"; break;
+        2:  396:                    case 2: atom = "OXYGEN"; break;
+        2:  397:                    case 3: atom = "HYDROGEN"; break;
+        4:  398:                    default: 
+        4:  399:                        printf("Invalid atom choice (1-4).\n"); 
+        4:  400:                        continue;
+        -:  401:                }
+        -:  402:
+        9:  403:                printf("Amount to add (max %llu): ", MAX_ATOMS);
+        -:  404:                unsigned long long amount;
+        9:  405:                if (!read_unsigned_long_long(&amount) || amount == 0 || amount > MAX_ATOMS) {
+        1:  406:                    printf("Invalid amount. Please enter a positive number up to %llu.\n", MAX_ATOMS); 
+        1:  407:                    continue;
+        -:  408:                }
+        -:  409:
+        8:  410:                snprintf(buffer, sizeof(buffer), "ADD %s %llu\n", atom, amount);
+        8:  411:                if (send(stream_fd, buffer, strlen(buffer), 0) == -1) {
+    #####:  412:                    perror("Stream send failed");
+    #####:  413:                    server_connected = 0;
+    #####:  414:                    break;
+        -:  415:                }
+        -:  416:                
+        -:  417:                // Receive and display server response
+        8:  418:                n = recv(stream_fd, recv_buffer, sizeof(recv_buffer) - 1, 0);
+        8:  419:                if (n <= 0) {
+    #####:  420:                    if (n == 0) {
+    #####:  421:                        printf("Server disconnected.\n");
+        -:  422:                    } else {
+    #####:  423:                        perror("Stream receive failed");
+        -:  424:                    }
+    #####:  425:                    server_connected = 0;
+    #####:  426:                    break;
+        -:  427:                } else {
+        8:  428:                    recv_buffer[n] = '\0';
+        8:  429:                    printf("Server: %s", recv_buffer);
+        -:  430:                    
+        8:  431:                    if (is_shutdown_message(recv_buffer)) {
+    #####:  432:                        printf("Server is shutting down. Disconnecting...\n");
+    #####:  433:                        server_connected = 0;
+    #####:  434:                        break;
+        -:  435:                    }
+        -:  436:                    
+        -:  437:                    // Attempt to receive additional messages (like status updates)
+        8:  438:                    if (wait_for_additional_messages(stream_fd, 100)) {
+    #####:  439:                        n = recv(stream_fd, recv_buffer, sizeof(recv_buffer) - 1, 0);
+    #####:  440:                        if (n > 0) {
+    #####:  441:                            recv_buffer[n] = '\0';
+    #####:  442:                            printf("Server: %s", recv_buffer);
+        -:  443:                        }
+        -:  444:                    }
+        -:  445:                }
+        -:  446:            }
+        -:  447:
+        9:  448:        } else if (choice == 2 && molecule_enabled && server_connected) {
+        -:  449:            // Request molecules (via datagram connection)
+        -:  450:            int mol_choice;
+        5:  451:            while (server_connected) {
+        5:  452:                show_molecule_menu();
+       5*:  453:                if (scanf("%d", &mol_choice) != 1) { 
+    #####:  454:                    while (getchar() != '\n'); 
+    #####:  455:                    printf("Invalid input. Please enter a number.\n");
+    #####:  456:                    continue; 
+        -:  457:                }
+        5:  458:                while (getchar() != '\n');
+        -:  459:
+        5:  460:                if (mol_choice == 5) break;
+        -:  461:
+        -:  462:                const char *mol;
+       4*:  463:                switch (mol_choice) {
+        1:  464:                    case 1: mol = "WATER"; break;
+        1:  465:                    case 2: mol = "CARBON DIOXIDE"; break;
+        1:  466:                    case 3: mol = "ALCOHOL"; break;
+        1:  467:                    case 4: mol = "GLUCOSE"; break;
+    #####:  468:                    default: 
+    #####:  469:                        printf("Invalid molecule choice (1-5).\n"); 
+    #####:  470:                        continue;
+        -:  471:                }
+        -:  472:
+        -:  473:                // Strict quantity validation - no defaults for invalid values
+        -:  474:                unsigned long long quantity;
+        -:  475:                while (1) {
+        4:  476:                    printf("How many %s molecules to request (1-%llu): ", mol, MAX_ATOMS);
+        4:  477:                    if (read_unsigned_long_long(&quantity) && quantity > 0 && quantity <= MAX_ATOMS) {
+        4:  478:                        break;
+        -:  479:                    }
+    #####:  480:                    printf("Invalid quantity. Please enter a positive number up to %llu.\n", MAX_ATOMS);
+        -:  481:                }
+        -:  482:
+        4:  483:                snprintf(buffer, sizeof(buffer), "DELIVER %s %llu\n", mol, quantity);
+        -:  484:                
+        4:  485:                if (use_network) {
+        -:  486:                    // Send via UDP
+        -:  487:                    struct sockaddr_in udp_addr;
+        4:  488:                    udp_addr.sin_family = AF_INET;
+        4:  489:                    udp_addr.sin_port = htons(udp_port);
+        -:  490:                    char server_ip[16];
+        4:  491:                    hostname_to_ip(server_host, server_ip);
+        4:  492:                    inet_pton(AF_INET, server_ip, &udp_addr.sin_addr);
+        -:  493:                    
+       4*:  494:                    if (sendto(datagram_fd, buffer, strlen(buffer), 0, 
+        -:  495:                              (struct sockaddr*)&udp_addr, sizeof(udp_addr)) == -1) {
+    #####:  496:                        perror("UDP send failed");
+    #####:  497:                        continue;
+        -:  498:                    }
+        -:  499:                    
+        4:  500:                    n = recvfrom(datagram_fd, recv_buffer, sizeof(recv_buffer) - 1, 0, NULL, NULL);
+        4:  501:                    if (n > 0) {
+        4:  502:                        recv_buffer[n] = '\0';
+        4:  503:                        printf("Server: %s", recv_buffer);
+        -:  504:                    } else {
+    #####:  505:                        perror("UDP receive failed");
+        -:  506:                    }
+        -:  507:                } else {
+        -:  508:                    // Send via UDS datagram
+        -:  509:                    struct sockaddr_un dgram_addr;
+    #####:  510:                    memset(&dgram_addr, 0, sizeof(dgram_addr));
+    #####:  511:                    dgram_addr.sun_family = AF_UNIX;
+    #####:  512:                    strncpy(dgram_addr.sun_path, uds_datagram_path, sizeof(dgram_addr.sun_path) - 1);
+        -:  513:                    
+    #####:  514:                    if (sendto(datagram_fd, buffer, strlen(buffer), 0, 
+        -:  515:                              (struct sockaddr*)&dgram_addr, sizeof(dgram_addr)) == -1) {
+    #####:  516:                        perror("UDS datagram send failed");
+    #####:  517:                        continue;
+        -:  518:                    }
+        -:  519:                    
+    #####:  520:                    n = recvfrom(datagram_fd, recv_buffer, sizeof(recv_buffer) - 1, 0, NULL, NULL);
+    #####:  521:                    if (n > 0) {
+    #####:  522:                        recv_buffer[n] = '\0';
+    #####:  523:                        printf("Server: %s", recv_buffer);
+        -:  524:                    } else {
+    #####:  525:                        perror("UDS datagram receive failed");
+        -:  526:                    }
+        -:  527:                }
+        -:  528:            }
+        -:  529:
+        7:  530:        } else if (choice == 3) {
+        6:  531:            running = 0;
+        1:  532:        } else if (choice == 2 && !molecule_enabled) {
+        1:  533:            printf("Molecule requests not available (no datagram connection configured).\n");
+        -:  534:        } else {
+    #####:  535:            printf("Invalid choice. Please select from the available options.\n");
+        -:  536:        }
+        -:  537:    }
+        -:  538:
+        -:  539:    // Cleanup resources
+        6:  540:    if (stream_fd != -1) close(stream_fd);
+        6:  541:    if (datagram_fd != -1) close(datagram_fd);
+        -:  542:    
+        6:  543:    if (!server_connected) {
+    #####:  544:        printf("Connection to server lost.\n");
+        -:  545:    } else {
+        6:  546:        printf("Disconnected from server.\n");
+        -:  547:    }
+        -:  548:    
+        6:  549:    return 0;
+        -:  550:}
