@@ -304,6 +304,10 @@ void unlock_inventory() {
  * Returns: Pointer to the response buffer
  */
 char* process_command(char *cmd, char *response_buf, size_t response_size) {
+    // Remove newline if present
+    char *newline = strchr(cmd, '\n');
+    if (newline) *newline = '\0';
+    
     char type[16];
     unsigned long long amount;
 
@@ -781,6 +785,9 @@ int main(int argc, char *argv[]) {
         tcp_fd = socket(AF_INET, SOCK_STREAM, 0);
         if (tcp_fd < 0) { perror("TCP socket error"); exit(1); }
         
+        int reuse = 1;
+        setsockopt(tcp_fd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
+        
         tcp_addr.sin_family = AF_INET;
         tcp_addr.sin_addr.s_addr = INADDR_ANY;
         tcp_addr.sin_port = htons(tcp_port);
@@ -974,7 +981,7 @@ int main(int argc, char *argv[]) {
                         }
                     }
                 } else {
-                    // Handle stream client data
+                    // Handle stream client data - THIS IS THE CRITICAL FIX
                     char buffer[BUFFER_SIZE];
                     char response[BUFFER_SIZE];
                     int nbytes = recv(i, buffer, sizeof(buffer) - 1, 0);
@@ -985,6 +992,7 @@ int main(int argc, char *argv[]) {
                         FD_CLR(i, &master_set);
                     } else {
                         buffer[nbytes] = '\0';
+                        // This ensures TCP client commands go through process_command
                         process_command(buffer, response, sizeof(response));
                         send(i, response, strlen(response), 0);
                     }
