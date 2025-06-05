@@ -2,6 +2,7 @@
  * uds_requester.c - Q5
  *
  * Client with UDS support (both stream and datagram)
+ * Enhanced with proper server response handling and no default fallbacks
  * 
  * Usage:
  *   ./uds_requester -h <hostname/IP> -p <tcp_port> [-u <udp_port>]
@@ -168,33 +169,49 @@ int main(int argc, char *argv[]) {
     int molecule_enabled = 0;
     
     if (use_network) {
-        // TCP connection
-        char server_ip[16];
-        if (hostname_to_ip(server_host, server_ip) != 0) {
-            fprintf(stderr, "Could not resolve hostname: %s\n", server_host);
+        // TCP connection using getaddrinfo (as required by PDF)
+        struct addrinfo hints, *servinfo, *p;
+        int rv;
+        
+        memset(&hints, 0, sizeof hints);
+        hints.ai_family = AF_INET;
+        hints.ai_socktype = SOCK_STREAM;
+        
+        char port_str[6];
+        snprintf(port_str, sizeof(port_str), "%d", tcp_port);
+        
+        if ((rv = getaddrinfo(server_host, port_str, &hints, &servinfo)) != 0) {
+            fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
             exit(EXIT_FAILURE);
         }
         
-        stream_fd = socket(AF_INET, SOCK_STREAM, 0);
-        if (stream_fd < 0) {
-            perror("TCP socket creation failed");
+        // Try to connect
+        for(p = servinfo; p != NULL; p = p->ai_next) {
+            if ((stream_fd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1) {
+                perror("socket");
+                continue;
+            }
+            
+            if (connect(stream_fd, p->ai_addr, p->ai_addrlen) == -1) {
+                close(stream_fd);
+                perror("connect");
+                continue;
+            }
+            
+            break;
+        }
+        
+        if (p == NULL) {
+            fprintf(stderr, "Failed to connect\n");
+            freeaddrinfo(servinfo);
             exit(EXIT_FAILURE);
         }
         
-        struct sockaddr_in tcp_addr;
-        tcp_addr.sin_family = AF_INET;
-        tcp_addr.sin_port = htons(tcp_port);
-        if (inet_pton(AF_INET, server_ip, &tcp_addr.sin_addr) <= 0) {
-            fprintf(stderr, "Invalid IP address: %s\n", server_ip);
-            close(stream_fd);
-            exit(EXIT_FAILURE);
-        }
+        char server_ip[INET_ADDRSTRLEN];
+        struct sockaddr_in *addr = (struct sockaddr_in *)p->ai_addr;
+        inet_ntop(AF_INET, &(addr->sin_addr), server_ip, INET_ADDRSTRLEN);
         
-        if (connect(stream_fd, (struct sockaddr*)&tcp_addr, sizeof(tcp_addr)) < 0) {
-            perror("TCP connection failed");
-            close(stream_fd);
-            exit(EXIT_FAILURE);
-        }
+        freeaddrinfo(servinfo);
         
         printf("Connected to TCP server at %s:%d", server_ip, tcp_port);
         
@@ -294,6 +311,7 @@ int main(int argc, char *argv[]) {
                     break;
                 }
                 
+                // Receive and display server response
                 int n = recv(stream_fd, recv_buffer, sizeof(recv_buffer) - 1, 0);
                 if (n <= 0) {
                     if (n == 0) {
@@ -311,6 +329,22 @@ int main(int argc, char *argv[]) {
                         printf("Server is shutting down. Disconnecting...\n");
                         server_connected = 0;
                         break;
+                    }
+                    
+                    // Try to receive additional messages (like status update)
+                    fd_set read_fds;
+                    struct timeval timeout;
+                    FD_ZERO(&read_fds);
+                    FD_SET(stream_fd, &read_fds);
+                    timeout.tv_sec = 0;
+                    timeout.tv_usec = 100000; // 100ms timeout
+                    
+                    if (select(stream_fd + 1, &read_fds, NULL, NULL, &timeout) > 0) {
+                        n = recv(stream_fd, recv_buffer, sizeof(recv_buffer) - 1, 0);
+                        if (n > 0) {
+                            recv_buffer[n] = '\0';
+                            printf("Server: %s", recv_buffer);
+                        }
                     }
                 }
             }
@@ -337,6 +371,7 @@ int main(int argc, char *argv[]) {
                     default: printf("Invalid molecule choice.\n"); continue;
                 }
 
+                // STRICT quantity validation - NO default fallback
                 unsigned long long quantity;
                 while (1) {
                     printf("How many %s molecules to request (1-%llu): ", mol, MAX_ATOMS);

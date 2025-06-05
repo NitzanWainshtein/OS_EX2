@@ -2,6 +2,7 @@
  * uds_warehouse.c - Q5
  * 
  * Warehouse server with Unix Domain Sockets support
+ * Enhanced with proper client feedback and error handling
  * 
  * Usage:
  *   ./uds_warehouse -T <tcp_port> -U <udp_port> [options]
@@ -58,50 +59,79 @@ void show_usage(const char *program_name) {
     printf("  %s -s /tmp/stream.sock -d /tmp/datagram.sock\n", program_name);
 }
 
-void process_command(char *cmd, unsigned long long *carbon, unsigned long long *oxygen, unsigned long long *hydrogen) {
+/**
+ * process_command - Enhanced with detailed client feedback
+ */
+void process_command(int client_fd, char *cmd, unsigned long long *carbon, unsigned long long *oxygen, unsigned long long *hydrogen) {
     char type[16];
     unsigned long long amount;
+    char response[BUFFER_SIZE];
 
     if (sscanf(cmd, "ADD %15s %llu", type, &amount) == 2) {
         if (amount > MAX_ATOMS) {
+            snprintf(response, sizeof(response), "ERROR: Amount too large, max allowed per command is %llu.\n", MAX_ATOMS);
             printf("Error: amount too large, max allowed per command is %llu.\n", MAX_ATOMS);
+            send(client_fd, response, strlen(response), 0);
             return;
         }
 
         if (strcmp(type, "CARBON") == 0) {
             if (*carbon + amount > MAX_ATOMS) {
+                snprintf(response, sizeof(response), "ERROR: Adding this would exceed CARBON storage limit (%llu).\n", MAX_ATOMS);
                 printf("Error: adding this would exceed CARBON storage limit (%llu).\n", MAX_ATOMS);
+                send(client_fd, response, strlen(response), 0);
                 return;
             }
             *carbon += amount;
+            snprintf(response, sizeof(response), "SUCCESS: Added %llu CARBON. Total CARBON: %llu\n", amount, *carbon);
             printf("Added %llu CARBON.\n", amount);
         } else if (strcmp(type, "OXYGEN") == 0) {
             if (*oxygen + amount > MAX_ATOMS) {
+                snprintf(response, sizeof(response), "ERROR: Adding this would exceed OXYGEN storage limit (%llu).\n", MAX_ATOMS);
                 printf("Error: adding this would exceed OXYGEN storage limit (%llu).\n", MAX_ATOMS);
+                send(client_fd, response, strlen(response), 0);
                 return;
             }
             *oxygen += amount;
+            snprintf(response, sizeof(response), "SUCCESS: Added %llu OXYGEN. Total OXYGEN: %llu\n", amount, *oxygen);
             printf("Added %llu OXYGEN.\n", amount);
         } else if (strcmp(type, "HYDROGEN") == 0) {
             if (*hydrogen + amount > MAX_ATOMS) {
+                snprintf(response, sizeof(response), "ERROR: Adding this would exceed HYDROGEN storage limit (%llu).\n", MAX_ATOMS);
                 printf("Error: adding this would exceed HYDROGEN storage limit (%llu).\n", MAX_ATOMS);
+                send(client_fd, response, strlen(response), 0);
                 return;
             }
             *hydrogen += amount;
+            snprintf(response, sizeof(response), "SUCCESS: Added %llu HYDROGEN. Total HYDROGEN: %llu\n", amount, *hydrogen);
             printf("Added %llu HYDROGEN.\n", amount);
         } else {
+            snprintf(response, sizeof(response), "ERROR: Unknown atom type: %s\n", type);
             printf("Unknown atom type: %s\n", type);
+            send(client_fd, response, strlen(response), 0);
             return;
         }
     } else {
+        snprintf(response, sizeof(response), "ERROR: Invalid command format: %s", cmd);
         printf("Invalid command: %s\n", cmd);
+        send(client_fd, response, strlen(response), 0);
         return;
     }
 
+    // Send success response
+    send(client_fd, response, strlen(response), 0);
+    
+    // Print current status to server console
     printf("Current warehouse status:\n");
     printf("CARBON: %llu\n", *carbon);
     printf("OXYGEN: %llu\n", *oxygen);
     printf("HYDROGEN: %llu\n", *hydrogen);
+    
+    // Send warehouse status to client
+    char status_msg[BUFFER_SIZE];
+    snprintf(status_msg, sizeof(status_msg), "Status: CARBON: %llu, OXYGEN: %llu, HYDROGEN: %llu\n", 
+             *carbon, *oxygen, *hydrogen);
+    send(client_fd, status_msg, strlen(status_msg), 0);
 }
 
 int can_deliver(const char *molecule, unsigned long long quantity, unsigned long long *carbon, unsigned long long *oxygen, unsigned long long *hydrogen) {
@@ -197,6 +227,7 @@ void process_drink_command(char *cmd, unsigned long long carbon, unsigned long l
         printf("Can produce %llu CHAMPAGNE(s) (needs: WATER + CARBON DIOXIDE + GLUCOSE)\n", possible_champagne);
         
     } else if (strcmp(cmd, "shutdown") == 0) {
+        // השרת יטפל ב-shutdown בלולאה הראשית
         return;
     } else {
         printf("Unknown command: %s\n", cmd);
@@ -204,7 +235,7 @@ void process_drink_command(char *cmd, unsigned long long carbon, unsigned long l
     }
 }
 
-void handle_molecule_request(char *buffer, int req_fd, struct sockaddr_un *client_addr, socklen_t addrlen, 
+void handle_molecule_request(char *buffer, int req_fd, void *client_addr, socklen_t addrlen, 
                            unsigned long long *carbon, unsigned long long *oxygen, unsigned long long *hydrogen, int is_uds) {
     printf("Received molecule request: %s\n", buffer);
 
@@ -230,6 +261,15 @@ void handle_molecule_request(char *buffer, int req_fd, struct sockaddr_un *clien
             quantity = 1;
         }
         
+        // STRICT quantity validation - NO default fallback
+        if (quantity == 0 || quantity > MAX_ATOMS) {
+            char error_msg[BUFFER_SIZE];
+            snprintf(error_msg, sizeof(error_msg), "ERROR: Invalid quantity %llu (must be 1-%llu).\n", quantity, MAX_ATOMS);
+            sendto(req_fd, error_msg, strlen(error_msg), 0, (struct sockaddr*)client_addr, addrlen);
+            printf("Invalid quantity for %s: %llu\n", molecule, quantity);
+            return;
+        }
+        
         if (can_deliver(molecule, quantity, carbon, oxygen, hydrogen)) {
             char success_msg[BUFFER_SIZE];
             if (quantity == 1) {
@@ -240,13 +280,7 @@ void handle_molecule_request(char *buffer, int req_fd, struct sockaddr_un *clien
                         "Delivered %llu %s successfully.\n", quantity, molecule);
             }
             
-            if (is_uds) {
-                sendto(req_fd, success_msg, strlen(success_msg), 0,
-                       (struct sockaddr*)client_addr, addrlen);
-            } else {
-                sendto(req_fd, success_msg, strlen(success_msg), 0,
-                       (struct sockaddr*)client_addr, addrlen);
-            }
+            sendto(req_fd, success_msg, strlen(success_msg), 0, (struct sockaddr*)client_addr, addrlen);
             printf("Delivered %llu %s.\n", quantity, molecule);
             
             printf("Current warehouse status:\n");
@@ -255,24 +289,12 @@ void handle_molecule_request(char *buffer, int req_fd, struct sockaddr_un *clien
             printf("HYDROGEN: %llu\n", *hydrogen);
         } else {
             char fail_msg[] = "Not enough atoms for this molecule.\n";
-            if (is_uds) {
-                sendto(req_fd, fail_msg, strlen(fail_msg), 0,
-                       (struct sockaddr*)client_addr, addrlen);
-            } else {
-                sendto(req_fd, fail_msg, strlen(fail_msg), 0,
-                       (struct sockaddr*)client_addr, addrlen);
-            }
+            sendto(req_fd, fail_msg, strlen(fail_msg), 0, (struct sockaddr*)client_addr, addrlen);
             printf("Failed to deliver %llu %s: insufficient atoms.\n", quantity, molecule);
         }
     } else {
         char error_msg[] = "Invalid DELIVER command.\n";
-        if (is_uds) {
-            sendto(req_fd, error_msg, strlen(error_msg), 0,
-                   (struct sockaddr*)client_addr, addrlen);
-        } else {
-            sendto(req_fd, error_msg, strlen(error_msg), 0,
-                   (struct sockaddr*)client_addr, addrlen);
-        }
+        sendto(req_fd, error_msg, strlen(error_msg), 0, (struct sockaddr*)client_addr, addrlen);
         printf("Invalid request command.\n");
     }
 }
@@ -543,7 +565,7 @@ int main(int argc, char *argv[]) {
                             continue;
                         }
                         buffer[nbytes] = '\0';
-                        handle_molecule_request(buffer, udp_fd, (struct sockaddr_un*)&client_addr, addrlen, 
+                        handle_molecule_request(buffer, udp_fd, &client_addr, addrlen, 
                                               &carbon, &oxygen, &hydrogen, 0);
                     } else {
                         struct sockaddr_un client_addr;
@@ -571,7 +593,7 @@ int main(int argc, char *argv[]) {
                                     close(j);
                                 }
                             }
-                            break;
+                            goto shutdown_cleanup; // יציאה נקייה מהלולאה
                         } else {
                             process_drink_command(input, carbon, oxygen, hydrogen);
                         }
@@ -587,14 +609,14 @@ int main(int argc, char *argv[]) {
                         FD_CLR(i, &master_set);
                     } else {
                         buffer[nbytes] = '\0';
-                        process_command(buffer, &carbon, &oxygen, &hydrogen);
-                        send(i, "Command processed.\n", strlen("Command processed.\n"), 0);
+                        process_command(i, buffer, &carbon, &oxygen, &hydrogen);
                     }
                 }
             }
         }
     }
     
+shutdown_cleanup:
     // Cleanup
     if (tcp_fd != -1) close(tcp_fd);
     if (udp_fd != -1) close(udp_fd);
@@ -609,7 +631,6 @@ int main(int argc, char *argv[]) {
     
     if (stream_path) free(stream_path);
     if (datagram_path) free(datagram_path);
-    
     printf("Server terminated.\n");
     return 0;
 }
