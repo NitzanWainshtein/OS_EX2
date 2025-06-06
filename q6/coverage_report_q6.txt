@@ -1,348 +1,61 @@
 === Q6 Code Coverage Report ===
-Generated on: 
+Generated on: Fri Jun  6 17:07:11 IDT 2025
 
-Lines executed:85.03% of 294
-Lines executed:40.41% of 490
-Lines executed:57.14% of 784
+Lines executed:89.15% of 470
+Lines executed:89.15% of 470
 
 Coverage files (.gcov) generated:
-persistent_requester.c.gcov
 persistent_warehouse.c.gcov
 
 === Uncovered Lines (####) ===
-persistent_requester.c.gcov:    #####:   81:        return 0;
-persistent_requester.c.gcov:    #####:   90:        return 0;
-persistent_requester.c.gcov:    #####:  113:        strcpy(ip, hostname);
-persistent_requester.c.gcov:    #####:  114:        return 0;
-persistent_requester.c.gcov:    #####:  119:        return -1;
-persistent_requester.c.gcov:    #####:  247:                perror("socket");
-persistent_requester.c.gcov:    #####:  248:                continue;
-persistent_requester.c.gcov:    #####:  278:                perror("UDP socket creation failed");
-persistent_requester.c.gcov:    #####:  279:                close(stream_fd);
-persistent_requester.c.gcov:    #####:  280:                exit(EXIT_FAILURE);
-persistent_requester.c.gcov:    #####:  291:            perror("UDS stream socket creation failed");
-persistent_requester.c.gcov:    #####:  292:            exit(EXIT_FAILURE);
-persistent_requester.c.gcov:    #####:  310:            datagram_fd = socket(AF_UNIX, SOCK_DGRAM, 0);
-persistent_requester.c.gcov:    #####:  311:            if (datagram_fd < 0) {
-persistent_requester.c.gcov:    #####:  312:                perror("UDS datagram socket creation failed");
-persistent_requester.c.gcov:    #####:  313:                close(stream_fd);
-persistent_requester.c.gcov:    #####:  314:                exit(EXIT_FAILURE);
-persistent_requester.c.gcov:    #####:  316:            molecule_enabled = 1;
-persistent_requester.c.gcov:    #####:  317:            printf(", datagram:%s", uds_datagram_path);
-persistent_requester.c.gcov:    #####:  378:                    perror("Stream send failed");
-persistent_requester.c.gcov:    #####:  379:                    server_connected = 0;
-persistent_requester.c.gcov:    #####:  380:                    break;
-persistent_requester.c.gcov:    #####:  389:                        perror("Stream receive failed");
-persistent_requester.c.gcov:    #####:  398:                        printf("Server is shutting down. Disconnecting...\n");
-persistent_requester.c.gcov:    #####:  399:                        server_connected = 0;
-persistent_requester.c.gcov:    #####:  400:                        break;
-persistent_requester.c.gcov:    #####:  405:                        n = recv(stream_fd, recv_buffer, sizeof(recv_buffer) - 1, 0);
-persistent_requester.c.gcov:    #####:  406:                        if (n > 0) {
-persistent_requester.c.gcov:    #####:  407:                            recv_buffer[n] = '\0';
-persistent_requester.c.gcov:    #####:  408:                            printf("Server: %s", recv_buffer);
-persistent_requester.c.gcov:    #####:  471:                        perror("UDP send failed");
-persistent_requester.c.gcov:    #####:  472:                        continue;
-persistent_requester.c.gcov:    #####:  480:                        perror("UDP receive failed");
-persistent_requester.c.gcov:    #####:  485:                    memset(&dgram_addr, 0, sizeof(dgram_addr));
-persistent_requester.c.gcov:    #####:  486:                    dgram_addr.sun_family = AF_UNIX;
-persistent_requester.c.gcov:    #####:  487:                    strncpy(dgram_addr.sun_path, uds_datagram_path, sizeof(dgram_addr.sun_path) - 1);
-persistent_requester.c.gcov:    #####:  489:                    if (sendto(datagram_fd, buffer, strlen(buffer), 0, 
-persistent_requester.c.gcov:    #####:  491:                        perror("UDS datagram send failed");
-persistent_requester.c.gcov:    #####:  492:                        continue;
-persistent_requester.c.gcov:    #####:  495:                    n = recvfrom(datagram_fd, recv_buffer, sizeof(recv_buffer) - 1, 0, NULL, NULL);
-persistent_requester.c.gcov:    #####:  496:                    if (n > 0) {
-persistent_requester.c.gcov:    #####:  497:                        recv_buffer[n] = '\0';
-persistent_requester.c.gcov:    #####:  498:                        printf("Server: %s", recv_buffer);
-persistent_requester.c.gcov:    #####:  500:                        perror("UDS datagram receive failed");
-persistent_warehouse.c.gcov:    #####:  106:unsigned long long min3(unsigned long long a, unsigned long long b, unsigned long long c) {
-persistent_warehouse.c.gcov:    #####:  107:    unsigned long long min_ab = (a < b) ? a : b;
-persistent_warehouse.c.gcov:    #####:  108:    return (min_ab < c) ? min_ab : c;
-persistent_warehouse.c.gcov:    #####:  168:            perror("Failed to write initial inventory");
-persistent_warehouse.c.gcov:    #####:  169:            close(inventory_fd);
-persistent_warehouse.c.gcov:    #####:  170:            return -1;
-persistent_warehouse.c.gcov:    #####:  180:            printf("Warning: Invalid save file format, reinitializing...\n");
-persistent_warehouse.c.gcov:    #####:  181:            lseek(inventory_fd, 0, SEEK_SET);
-persistent_warehouse.c.gcov:    #####:  182:            inventory_t init_inventory = {
-persistent_warehouse.c.gcov:    #####:  188:            if (write(inventory_fd, &init_inventory, sizeof(inventory_t)) != sizeof(inventory_t)) {
-persistent_warehouse.c.gcov:    #####:  189:                perror("Failed to reinitialize save file");
-persistent_warehouse.c.gcov:    #####:  190:                close(inventory_fd);
-persistent_warehouse.c.gcov:    #####:  191:                return -1;
-persistent_warehouse.c.gcov:    #####:  216:        perror("Failed to memory map inventory file");
-persistent_warehouse.c.gcov:    #####:  217:        close(inventory_fd);
-persistent_warehouse.c.gcov:    #####:  218:        return -1;
-persistent_warehouse.c.gcov:    #####:  233:            perror("Warning: Failed to sync inventory to disk");
-persistent_warehouse.c.gcov:    #####:  262:void lock_inventory() {
-persistent_warehouse.c.gcov:    #####:  263:    if (inventory_fd != -1) {
-persistent_warehouse.c.gcov:    #####:  265:        lock.l_type = F_WRLCK;
-persistent_warehouse.c.gcov:    #####:  266:        lock.l_whence = SEEK_SET;
-persistent_warehouse.c.gcov:    #####:  267:        lock.l_start = 0;
-persistent_warehouse.c.gcov:    #####:  268:        lock.l_len = sizeof(inventory_t);
-persistent_warehouse.c.gcov:    #####:  270:        if (fcntl(inventory_fd, F_SETLKW, &lock) == -1) {
-persistent_warehouse.c.gcov:    #####:  271:            perror("Warning: Failed to lock inventory file");
-persistent_warehouse.c.gcov:    #####:  274:}
-persistent_warehouse.c.gcov:    #####:  281:void unlock_inventory() {
-persistent_warehouse.c.gcov:    #####:  282:    if (inventory_fd != -1) {
-persistent_warehouse.c.gcov:    #####:  284:        lock.l_type = F_UNLCK;
-persistent_warehouse.c.gcov:    #####:  285:        lock.l_whence = SEEK_SET;
-persistent_warehouse.c.gcov:    #####:  286:        lock.l_start = 0;
-persistent_warehouse.c.gcov:    #####:  287:        lock.l_len = sizeof(inventory_t);
-persistent_warehouse.c.gcov:    #####:  289:        if (fcntl(inventory_fd, F_SETLK, &lock) == -1) {
-persistent_warehouse.c.gcov:    #####:  290:            perror("Warning: Failed to unlock inventory file");
-persistent_warehouse.c.gcov:    #####:  293:}
-persistent_warehouse.c.gcov:    #####:  306:char* process_command(char *cmd, char *response_buf, size_t response_size) {
-persistent_warehouse.c.gcov:    #####:  310:    if (sscanf(cmd, "ADD %15s %llu", type, &amount) == 2) {
-persistent_warehouse.c.gcov:    #####:  311:        if (amount > MAX_ATOMS) {
-persistent_warehouse.c.gcov:    #####:  312:            snprintf(response_buf, response_size, "ERROR: Amount too large, max allowed per command is %llu.\n", MAX_ATOMS);
-persistent_warehouse.c.gcov:    #####:  313:            printf("Error: amount too large, max allowed per command is %llu.\n", MAX_ATOMS);
-persistent_warehouse.c.gcov:    #####:  314:            return response_buf;
-persistent_warehouse.c.gcov:    #####:  318:        int success = 0;
-persistent_warehouse.c.gcov:    #####:  321:        lock_inventory();
-persistent_warehouse.c.gcov:    #####:  323:        if (strcmp(type, "CARBON") == 0) {
-persistent_warehouse.c.gcov:    #####:  324:            if (inventory->carbon + amount > MAX_ATOMS) {
-persistent_warehouse.c.gcov:    #####:  325:                snprintf(response_buf, response_size, "ERROR: Adding this would exceed CARBON storage limit (%llu).\n", MAX_ATOMS);
-persistent_warehouse.c.gcov:    #####:  326:                printf("Error: adding this would exceed CARBON storage limit (%llu).\n", MAX_ATOMS);
-persistent_warehouse.c.gcov:    #####:  328:                inventory->carbon += amount;
-persistent_warehouse.c.gcov:    #####:  329:                snprintf(response_buf, response_size, "SUCCESS: Added %llu CARBON. Total CARBON: %llu\n", 
-persistent_warehouse.c.gcov:    #####:  330:                         amount, inventory->carbon);
-persistent_warehouse.c.gcov:    #####:  331:                printf("Added %llu CARBON.\n", amount);
-persistent_warehouse.c.gcov:    #####:  332:                success = 1;
-persistent_warehouse.c.gcov:    #####:  334:        } else if (strcmp(type, "OXYGEN") == 0) {
-persistent_warehouse.c.gcov:    #####:  335:            if (inventory->oxygen + amount > MAX_ATOMS) {
-persistent_warehouse.c.gcov:    #####:  336:                snprintf(response_buf, response_size, "ERROR: Adding this would exceed OXYGEN storage limit (%llu).\n", MAX_ATOMS);
-persistent_warehouse.c.gcov:    #####:  337:                printf("Error: adding this would exceed OXYGEN storage limit (%llu).\n", MAX_ATOMS);
-persistent_warehouse.c.gcov:    #####:  339:                inventory->oxygen += amount;
-persistent_warehouse.c.gcov:    #####:  340:                snprintf(response_buf, response_size, "SUCCESS: Added %llu OXYGEN. Total OXYGEN: %llu\n", 
-persistent_warehouse.c.gcov:    #####:  341:                         amount, inventory->oxygen);
-persistent_warehouse.c.gcov:    #####:  342:                printf("Added %llu OXYGEN.\n", amount);
-persistent_warehouse.c.gcov:    #####:  343:                success = 1;
-persistent_warehouse.c.gcov:    #####:  345:        } else if (strcmp(type, "HYDROGEN") == 0) {
-persistent_warehouse.c.gcov:    #####:  346:            if (inventory->hydrogen + amount > MAX_ATOMS) {
-persistent_warehouse.c.gcov:    #####:  347:                snprintf(response_buf, response_size, "ERROR: Adding this would exceed HYDROGEN storage limit (%llu).\n", MAX_ATOMS);
-persistent_warehouse.c.gcov:    #####:  348:                printf("Error: adding this would exceed HYDROGEN storage limit (%llu).\n", MAX_ATOMS);
-persistent_warehouse.c.gcov:    #####:  350:                inventory->hydrogen += amount;
-persistent_warehouse.c.gcov:    #####:  351:                snprintf(response_buf, response_size, "SUCCESS: Added %llu HYDROGEN. Total HYDROGEN: %llu\n", 
-persistent_warehouse.c.gcov:    #####:  352:                         amount, inventory->hydrogen);
-persistent_warehouse.c.gcov:    #####:  353:                printf("Added %llu HYDROGEN.\n", amount);
-persistent_warehouse.c.gcov:    #####:  354:                success = 1;
-persistent_warehouse.c.gcov:    #####:  357:            snprintf(response_buf, response_size, "ERROR: Unknown atom type: %s\n", type);
-persistent_warehouse.c.gcov:    #####:  358:            printf("Unknown atom type: %s\n", type);
-persistent_warehouse.c.gcov:    #####:  361:        if (success) {
-persistent_warehouse.c.gcov:    #####:  362:            save_inventory();
-persistent_warehouse.c.gcov:    #####:  365:            final_carbon = inventory->carbon;
-persistent_warehouse.c.gcov:    #####:  366:            final_oxygen = inventory->oxygen;
-persistent_warehouse.c.gcov:    #####:  367:            final_hydrogen = inventory->hydrogen;
-persistent_warehouse.c.gcov:    #####:  369:            unlock_inventory();
-persistent_warehouse.c.gcov:    #####:  373:            snprintf(status_msg, sizeof(status_msg), "Status: CARBON: %llu, OXYGEN: %llu, HYDROGEN: %llu\n", 
-persistent_warehouse.c.gcov:    #####:  376:            size_t current_len = strlen(response_buf);
-persistent_warehouse.c.gcov:    #####:  377:            if (current_len + strlen(status_msg) < response_size) {
-persistent_warehouse.c.gcov:    #####:  378:                strcat(response_buf, status_msg);
-persistent_warehouse.c.gcov:    #####:  382:            printf("Current warehouse status:\n");
-persistent_warehouse.c.gcov:    #####:  383:            printf("CARBON: %llu\n", final_carbon);
-persistent_warehouse.c.gcov:    #####:  384:            printf("OXYGEN: %llu\n", final_oxygen);
-persistent_warehouse.c.gcov:    #####:  385:            printf("HYDROGEN: %llu\n", final_hydrogen);
-persistent_warehouse.c.gcov:    #####:  387:            unlock_inventory();
-persistent_warehouse.c.gcov:    #####:  390:        snprintf(response_buf, response_size, "ERROR: Invalid command format: %s\n", cmd);
-persistent_warehouse.c.gcov:    #####:  391:        printf("Invalid command: %s\n", cmd);
-persistent_warehouse.c.gcov:    #####:  394:    return response_buf;
-persistent_warehouse.c.gcov:    #####:  413:int can_deliver(const char *molecule, unsigned long long quantity) {
-persistent_warehouse.c.gcov:    #####:  414:    unsigned long long needed_c = 0, needed_o = 0, needed_h = 0;
-persistent_warehouse.c.gcov:    #####:  416:    if (strcmp(molecule, "WATER") == 0) {
-persistent_warehouse.c.gcov:    #####:  417:        needed_h = 2 * quantity;
-persistent_warehouse.c.gcov:    #####:  418:        needed_o = 1 * quantity;
-persistent_warehouse.c.gcov:    #####:  419:    } else if (strcmp(molecule, "CARBON DIOXIDE") == 0) {
-persistent_warehouse.c.gcov:    #####:  420:        needed_c = 1 * quantity;
-persistent_warehouse.c.gcov:    #####:  421:        needed_o = 2 * quantity;
-persistent_warehouse.c.gcov:    #####:  422:    } else if (strcmp(molecule, "ALCOHOL") == 0) {
-persistent_warehouse.c.gcov:    #####:  423:        needed_c = 2 * quantity;
-persistent_warehouse.c.gcov:    #####:  424:        needed_h = 6 * quantity;
-persistent_warehouse.c.gcov:    #####:  425:        needed_o = 1 * quantity;
-persistent_warehouse.c.gcov:    #####:  426:    } else if (strcmp(molecule, "GLUCOSE") == 0) {
-persistent_warehouse.c.gcov:    #####:  427:        needed_c = 6 * quantity;
-persistent_warehouse.c.gcov:    #####:  428:        needed_h = 12 * quantity;
-persistent_warehouse.c.gcov:    #####:  429:        needed_o = 6 * quantity;
-persistent_warehouse.c.gcov:    #####:  431:        return 0; // Unknown molecule
-persistent_warehouse.c.gcov:    #####:  434:    lock_inventory();
-persistent_warehouse.c.gcov:    #####:  436:    if (inventory->carbon >= needed_c && inventory->oxygen >= needed_o && inventory->hydrogen >= needed_h) {
-persistent_warehouse.c.gcov:    #####:  437:        inventory->carbon -= needed_c;
-persistent_warehouse.c.gcov:    #####:  438:        inventory->oxygen -= needed_o;
-persistent_warehouse.c.gcov:    #####:  439:        inventory->hydrogen -= needed_h;
-persistent_warehouse.c.gcov:    #####:  440:        save_inventory();
-persistent_warehouse.c.gcov:    #####:  441:        unlock_inventory();
-persistent_warehouse.c.gcov:    #####:  442:        return 1;
-persistent_warehouse.c.gcov:    #####:  445:    unlock_inventory();
-persistent_warehouse.c.gcov:    #####:  446:    return 0;
-persistent_warehouse.c.gcov:    #####:  459:void calculate_possible_molecules(unsigned long long *water, unsigned long long *co2, 
-persistent_warehouse.c.gcov:    #####:  461:    lock_inventory();
-persistent_warehouse.c.gcov:    #####:  464:    *water = 0;
-persistent_warehouse.c.gcov:    #####:  465:    if (inventory->hydrogen >= 2 && inventory->oxygen >= 1) {
-persistent_warehouse.c.gcov:    #####:  466:        unsigned long long from_hydrogen = inventory->hydrogen / 2;
-persistent_warehouse.c.gcov:    #####:  467:        unsigned long long from_oxygen = inventory->oxygen;
-persistent_warehouse.c.gcov:    #####:  468:        *water = (from_hydrogen < from_oxygen) ? from_hydrogen : from_oxygen;
-persistent_warehouse.c.gcov:    #####:  472:    *co2 = 0;
-persistent_warehouse.c.gcov:    #####:  473:    if (inventory->carbon >= 1 && inventory->oxygen >= 2) {
-persistent_warehouse.c.gcov:    #####:  474:        unsigned long long from_carbon = inventory->carbon;
-persistent_warehouse.c.gcov:    #####:  475:        unsigned long long from_oxygen = inventory->oxygen / 2;
-persistent_warehouse.c.gcov:    #####:  476:        *co2 = (from_carbon < from_oxygen) ? from_carbon : from_oxygen;
-persistent_warehouse.c.gcov:    #####:  480:    *alcohol = 0;
-persistent_warehouse.c.gcov:    #####:  481:    if (inventory->carbon >= 2 && inventory->hydrogen >= 6 && inventory->oxygen >= 1) {
-persistent_warehouse.c.gcov:    #####:  482:        unsigned long long from_carbon = inventory->carbon / 2;
-persistent_warehouse.c.gcov:    #####:  483:        unsigned long long from_hydrogen = inventory->hydrogen / 6;
-persistent_warehouse.c.gcov:    #####:  484:        unsigned long long from_oxygen = inventory->oxygen;
-persistent_warehouse.c.gcov:    #####:  485:        *alcohol = min3(from_carbon, from_hydrogen, from_oxygen);
-persistent_warehouse.c.gcov:    #####:  489:    *glucose = 0;
-persistent_warehouse.c.gcov:    #####:  490:    if (inventory->carbon >= 6 && inventory->hydrogen >= 12 && inventory->oxygen >= 6) {
-persistent_warehouse.c.gcov:    #####:  491:        unsigned long long from_carbon = inventory->carbon / 6;
-persistent_warehouse.c.gcov:    #####:  492:        unsigned long long from_hydrogen = inventory->hydrogen / 12;
-persistent_warehouse.c.gcov:    #####:  493:        unsigned long long from_oxygen = inventory->oxygen / 6;
-persistent_warehouse.c.gcov:    #####:  494:        *glucose = min3(from_carbon, from_hydrogen, from_oxygen);
-persistent_warehouse.c.gcov:    #####:  497:    unlock_inventory();
-persistent_warehouse.c.gcov:    #####:  498:}
-persistent_warehouse.c.gcov:    #####:  509:void process_drink_command(char *cmd) {
-persistent_warehouse.c.gcov:    #####:  510:    char *newline = strchr(cmd, '\n');
-persistent_warehouse.c.gcov:    #####:  511:    if (newline) *newline = '\0';
-persistent_warehouse.c.gcov:    #####:  513:    if (strcmp(cmd, "GEN SOFT DRINK") == 0) {
-persistent_warehouse.c.gcov:    #####:  515:        calculate_possible_molecules(&water, &co2, &alcohol, &glucose);
-persistent_warehouse.c.gcov:    #####:  516:        unsigned long long possible_soft_drinks = min3(water, co2, alcohol);
-persistent_warehouse.c.gcov:    #####:  517:        printf("Can produce %llu SOFT DRINK(s) (needs: WATER + CARBON DIOXIDE + ALCOHOL)\n", possible_soft_drinks);
-persistent_warehouse.c.gcov:    #####:  519:    } else if (strcmp(cmd, "GEN VODKA") == 0) {
-persistent_warehouse.c.gcov:    #####:  521:        calculate_possible_molecules(&water, &co2, &alcohol, &glucose);
-persistent_warehouse.c.gcov:    #####:  522:        unsigned long long possible_vodka = min3(water, alcohol, glucose);
-persistent_warehouse.c.gcov:    #####:  523:        printf("Can produce %llu VODKA(s) (needs: WATER + ALCOHOL + GLUCOSE)\n", possible_vodka);
-persistent_warehouse.c.gcov:    #####:  525:    } else if (strcmp(cmd, "GEN CHAMPAGNE") == 0) {
-persistent_warehouse.c.gcov:    #####:  527:        calculate_possible_molecules(&water, &co2, &alcohol, &glucose);
-persistent_warehouse.c.gcov:    #####:  528:        unsigned long long possible_champagne = min3(water, co2, glucose);
-persistent_warehouse.c.gcov:    #####:  529:        printf("Can produce %llu CHAMPAGNE(s) (needs: WATER + CARBON DIOXIDE + GLUCOSE)\n", possible_champagne);
-persistent_warehouse.c.gcov:    #####:  531:    } else if (strcmp(cmd, "shutdown") == 0) {
-persistent_warehouse.c.gcov:    #####:  532:        return;
-persistent_warehouse.c.gcov:    #####:  534:        printf("Unknown command: %s\n", cmd);
-persistent_warehouse.c.gcov:    #####:  535:        printf("Available commands: GEN SOFT DRINK, GEN VODKA, GEN CHAMPAGNE, shutdown\n");
-persistent_warehouse.c.gcov:    #####:  550:void handle_molecule_request(char *buffer, int req_fd, struct sockaddr *client_addr, socklen_t addrlen) {
-persistent_warehouse.c.gcov:    #####:  551:    printf("Received molecule request: %s\n", buffer);
-persistent_warehouse.c.gcov:    #####:  554:    unsigned long long quantity = 1;
-persistent_warehouse.c.gcov:    #####:  556:    int parsed = sscanf(buffer, "DELIVER %63s %llu", molecule, &quantity);
-persistent_warehouse.c.gcov:    #####:  558:    if (parsed >= 1) {
-persistent_warehouse.c.gcov:    #####:  560:        if (strcmp(molecule, "CARBON") == 0) {
-persistent_warehouse.c.gcov:    #####:  562:            if (sscanf(buffer, "DELIVER CARBON %31s %llu", dioxide, &quantity) >= 2 && 
-persistent_warehouse.c.gcov:    #####:  563:                strcmp(dioxide, "DIOXIDE") == 0) {
-persistent_warehouse.c.gcov:    #####:  564:                strcpy(molecule, "CARBON DIOXIDE");
-persistent_warehouse.c.gcov:    #####:  565:            } else if (sscanf(buffer, "DELIVER CARBON %31s", dioxide) == 1 && 
-persistent_warehouse.c.gcov:    #####:  566:                      strcmp(dioxide, "DIOXIDE") == 0) {
-persistent_warehouse.c.gcov:    #####:  567:                strcpy(molecule, "CARBON DIOXIDE");
-persistent_warehouse.c.gcov:    #####:  568:                quantity = 1;
-persistent_warehouse.c.gcov:    #####:  572:        if (parsed == 1) {
-persistent_warehouse.c.gcov:    #####:  573:            quantity = 1;
-persistent_warehouse.c.gcov:    #####:  577:        if (quantity == 0 || quantity > MAX_ATOMS) {
-persistent_warehouse.c.gcov:    #####:  579:            snprintf(error_msg, sizeof(error_msg), "ERROR: Invalid quantity %llu (must be 1-%llu).\n", quantity, MAX_ATOMS);
-persistent_warehouse.c.gcov:    #####:  580:            sendto(req_fd, error_msg, strlen(error_msg), 0, client_addr, addrlen);
-persistent_warehouse.c.gcov:    #####:  581:            printf("Invalid quantity for %s: %llu\n", molecule, quantity);
-persistent_warehouse.c.gcov:    #####:  582:            return;
-persistent_warehouse.c.gcov:    #####:  585:        if (can_deliver(molecule, quantity)) {
-persistent_warehouse.c.gcov:    #####:  587:            if (quantity == 1) {
-persistent_warehouse.c.gcov:    #####:  588:                snprintf(success_msg, sizeof(success_msg), 
-persistent_warehouse.c.gcov:    #####:  591:                snprintf(success_msg, sizeof(success_msg), 
-persistent_warehouse.c.gcov:    #####:  596:            lock_inventory();
-persistent_warehouse.c.gcov:    #####:  597:            unsigned long long c = inventory->carbon;
-persistent_warehouse.c.gcov:    #####:  598:            unsigned long long o = inventory->oxygen;
-persistent_warehouse.c.gcov:    #####:  599:            unsigned long long h = inventory->hydrogen;
-persistent_warehouse.c.gcov:    #####:  600:            unlock_inventory();
-persistent_warehouse.c.gcov:    #####:  603:            snprintf(status_msg, sizeof(status_msg), "Status: CARBON: %llu, OXYGEN: %llu, HYDROGEN: %llu\n", c, o, h);
-persistent_warehouse.c.gcov:    #####:  605:            if (strlen(success_msg) + strlen(status_msg) < BUFFER_SIZE) {
-persistent_warehouse.c.gcov:    #####:  606:                strcat(success_msg, status_msg);
-persistent_warehouse.c.gcov:    #####:  609:            sendto(req_fd, success_msg, strlen(success_msg), 0, client_addr, addrlen);
-persistent_warehouse.c.gcov:    #####:  610:            printf("Delivered %llu %s.\n", quantity, molecule);
-persistent_warehouse.c.gcov:    #####:  612:            printf("Current warehouse status:\n");
-persistent_warehouse.c.gcov:    #####:  613:            printf("CARBON: %llu\n", c);
-persistent_warehouse.c.gcov:    #####:  614:            printf("OXYGEN: %llu\n", o);
-persistent_warehouse.c.gcov:    #####:  615:            printf("HYDROGEN: %llu\n", h);
-persistent_warehouse.c.gcov:    #####:  617:            char fail_msg[] = "ERROR: Not enough atoms for this molecule.\n";
-persistent_warehouse.c.gcov:    #####:  618:            sendto(req_fd, fail_msg, strlen(fail_msg), 0, client_addr, addrlen);
-persistent_warehouse.c.gcov:    #####:  619:            printf("Failed to deliver %llu %s: insufficient atoms.\n", quantity, molecule);
-persistent_warehouse.c.gcov:    #####:  622:        char error_msg[] = "ERROR: Invalid DELIVER command.\n";
-persistent_warehouse.c.gcov:    #####:  623:        sendto(req_fd, error_msg, strlen(error_msg), 0, client_addr, addrlen);
-persistent_warehouse.c.gcov:    #####:  624:        printf("Invalid request command.\n");
-persistent_warehouse.c.gcov:    #####:  793:            perror("TCP listen");
-persistent_warehouse.c.gcov:    #####:  794:            exit(1);
-persistent_warehouse.c.gcov:    #####:  802:        udp_fd = socket(AF_INET, SOCK_DGRAM, 0);
-persistent_warehouse.c.gcov:    #####:  803:        if (udp_fd < 0) { perror("UDP socket error"); exit(1); }
-persistent_warehouse.c.gcov:    #####:  805:        udp_addr.sin_family = AF_INET;
-persistent_warehouse.c.gcov:    #####:  806:        udp_addr.sin_addr.s_addr = INADDR_ANY;
-persistent_warehouse.c.gcov:    #####:  807:        udp_addr.sin_port = htons(udp_port);
-persistent_warehouse.c.gcov:    #####:  809:        if (bind(udp_fd, (struct sockaddr*)&udp_addr, sizeof(udp_addr)) < 0) {
-persistent_warehouse.c.gcov:    #####:  810:            perror("UDP bind");
-persistent_warehouse.c.gcov:    #####:  811:            exit(1);
-persistent_warehouse.c.gcov:    #####:  813:        if (udp_fd > fdmax) fdmax = udp_fd;
-persistent_warehouse.c.gcov:    #####:  832:        if (listen(uds_stream_fd, MAX_CLIENTS) < 0) {
-persistent_warehouse.c.gcov:    #####:  833:            perror("UDS stream listen");
-persistent_warehouse.c.gcov:    #####:  834:            exit(1);
-persistent_warehouse.c.gcov:    #####:  836:        if (uds_stream_fd > fdmax) fdmax = uds_stream_fd;
-persistent_warehouse.c.gcov:    #####:  855:        if (uds_datagram_fd > fdmax) fdmax = uds_datagram_fd;
-persistent_warehouse.c.gcov:    #####:  873:            printf("Timeout occurred. Server shutting down.\n");
-persistent_warehouse.c.gcov:    #####:  874:            break;
-persistent_warehouse.c.gcov:    #####:  880:            perror("select");
-persistent_warehouse.c.gcov:    #####:  881:            exit(1);
-persistent_warehouse.c.gcov:    #####:  885:        if (timeout_seconds > 0) {
-persistent_warehouse.c.gcov:    #####:  886:            alarm(timeout_seconds);
-persistent_warehouse.c.gcov:    #####:  889:        for (int i = 0; i <= fdmax; i++) {
-persistent_warehouse.c.gcov:    #####:  890:            if (FD_ISSET(i, &read_fds)) {
-persistent_warehouse.c.gcov:    #####:  891:                if (i == tcp_fd || i == uds_stream_fd) {
-persistent_warehouse.c.gcov:    #####:  893:                    if (i == tcp_fd) {
-persistent_warehouse.c.gcov:    #####:  895:                        socklen_t addrlen = sizeof(client_addr);
-persistent_warehouse.c.gcov:    #####:  896:                        new_fd = accept(tcp_fd, (struct sockaddr*)&client_addr, &addrlen);
-persistent_warehouse.c.gcov:    #####:  897:                        if (new_fd == -1) {
-persistent_warehouse.c.gcov:    #####:  898:                            perror("TCP accept");
-persistent_warehouse.c.gcov:    #####:  900:                            FD_SET(new_fd, &master_set);
-persistent_warehouse.c.gcov:    #####:  901:                            if (new_fd > fdmax) fdmax = new_fd;
-persistent_warehouse.c.gcov:    #####:  902:                            printf("New TCP connection from %s on socket %d\n",
-persistent_warehouse.c.gcov:    #####:  907:                            snprintf(welcome_msg, sizeof(welcome_msg), 
-persistent_warehouse.c.gcov:    #####:  909:                                    inventory->carbon, inventory->oxygen, inventory->hydrogen);
-persistent_warehouse.c.gcov:    #####:  910:                            send(new_fd, welcome_msg, strlen(welcome_msg), 0);
-persistent_warehouse.c.gcov:    #####:  914:                        socklen_t addrlen = sizeof(client_addr);
-persistent_warehouse.c.gcov:    #####:  915:                        new_fd = accept(uds_stream_fd, (struct sockaddr*)&client_addr, &addrlen);
-persistent_warehouse.c.gcov:    #####:  916:                        if (new_fd == -1) {
-persistent_warehouse.c.gcov:    #####:  917:                            perror("UDS stream accept");
-persistent_warehouse.c.gcov:    #####:  919:                            FD_SET(new_fd, &master_set);
-persistent_warehouse.c.gcov:    #####:  920:                            if (new_fd > fdmax) fdmax = new_fd;
-persistent_warehouse.c.gcov:    #####:  921:                            printf("New UDS stream connection on socket %d\n", new_fd);
-persistent_warehouse.c.gcov:    #####:  925:                            snprintf(welcome_msg, sizeof(welcome_msg), 
-persistent_warehouse.c.gcov:    #####:  927:                                    inventory->carbon, inventory->oxygen, inventory->hydrogen);
-persistent_warehouse.c.gcov:    #####:  928:                            send(new_fd, welcome_msg, strlen(welcome_msg), 0);
-persistent_warehouse.c.gcov:    #####:  931:                } else if (i == udp_fd || i == uds_datagram_fd) {
-persistent_warehouse.c.gcov:    #####:  935:                    if (i == udp_fd) {
-persistent_warehouse.c.gcov:    #####:  937:                        socklen_t addrlen = sizeof(client_addr);
-persistent_warehouse.c.gcov:    #####:  938:                        int nbytes = recvfrom(udp_fd, buffer, sizeof(buffer) - 1, 0,
-persistent_warehouse.c.gcov:    #####:  940:                        if (nbytes < 0) {
-persistent_warehouse.c.gcov:    #####:  941:                            perror("UDP recvfrom");
-persistent_warehouse.c.gcov:    #####:  942:                            continue;
-persistent_warehouse.c.gcov:    #####:  944:                        buffer[nbytes] = '\0';
-persistent_warehouse.c.gcov:    #####:  945:                        handle_molecule_request(buffer, udp_fd, (struct sockaddr*)&client_addr, addrlen);
-persistent_warehouse.c.gcov:    #####:  948:                        socklen_t addrlen = sizeof(client_addr);
-persistent_warehouse.c.gcov:    #####:  949:                        int nbytes = recvfrom(uds_datagram_fd, buffer, sizeof(buffer) - 1, 0,
-persistent_warehouse.c.gcov:    #####:  951:                        if (nbytes < 0) {
-persistent_warehouse.c.gcov:    #####:  952:                            perror("UDS datagram recvfrom");
-persistent_warehouse.c.gcov:    #####:  953:                            continue;
-persistent_warehouse.c.gcov:    #####:  955:                        buffer[nbytes] = '\0';
-persistent_warehouse.c.gcov:    #####:  956:                        handle_molecule_request(buffer, uds_datagram_fd, (struct sockaddr*)&client_addr, addrlen);
-persistent_warehouse.c.gcov:    #####:  958:                } else if (i == STDIN_FILENO) {
-persistent_warehouse.c.gcov:    #####:  961:                    if (fgets(input, sizeof(input), stdin)) {
-persistent_warehouse.c.gcov:    #####:  962:                        if (strncmp(input, "shutdown", 8) == 0) {
-persistent_warehouse.c.gcov:    #####:  963:                            printf("Shutdown command received. Notifying clients...\n");
-persistent_warehouse.c.gcov:    #####:  964:                            for (int j = 0; j <= fdmax; j++) {
-persistent_warehouse.c.gcov:    #####:  965:                                if (FD_ISSET(j, &master_set) && j != tcp_fd && j != udp_fd && 
-persistent_warehouse.c.gcov:    #####:  966:                                    j != uds_stream_fd && j != uds_datagram_fd && j != STDIN_FILENO) {
-persistent_warehouse.c.gcov:    #####:  967:                                    send(j, "Server shutting down.\n", strlen("Server shutting down.\n"), 0);
-persistent_warehouse.c.gcov:    #####:  968:                                    close(j);
-persistent_warehouse.c.gcov:    #####:  971:                            break;
-persistent_warehouse.c.gcov:    #####:  973:                            process_drink_command(input);
-persistent_warehouse.c.gcov:    #####:  980:                    int nbytes = recv(i, buffer, sizeof(buffer) - 1, 0);
-persistent_warehouse.c.gcov:    #####:  981:                    if (nbytes <= 0) {
-persistent_warehouse.c.gcov:    #####:  982:                        if (nbytes == 0) printf("Socket %d hung up\n", i);
-persistent_warehouse.c.gcov:    #####:  983:                        else perror("recv");
-persistent_warehouse.c.gcov:    #####:  984:                        close(i);
-persistent_warehouse.c.gcov:    #####:  985:                        FD_CLR(i, &master_set);
-persistent_warehouse.c.gcov:    #####:  987:                        buffer[nbytes] = '\0';
-persistent_warehouse.c.gcov:    #####:  988:                        process_command(buffer, response, sizeof(response));
-persistent_warehouse.c.gcov:    #####:  989:                        send(i, response, strlen(response), 0);
-persistent_warehouse.c.gcov:    #####: 1000:        close(uds_stream_fd);
-persistent_warehouse.c.gcov:    #####: 1001:        if (stream_path) unlink(stream_path);
-persistent_warehouse.c.gcov:    #####: 1004:        close(uds_datagram_fd);
-persistent_warehouse.c.gcov:    #####: 1005:        if (datagram_path) unlink(datagram_path);
+    #####:   84:        return 0;
+    #####:  102:            perror("Failed to write initial inventory");
+    #####:  103:            close(inventory_fd);
+    #####:  104:            return -1;
+    #####:  121:            perror("Failed to lock inventory file");
+    #####:  122:            close(inventory_fd);
+    #####:  123:            return -1;
+    #####:  147:            perror("Warning: Failed to unlock inventory file");
+    #####:  162:        return;
+    #####:  172:        perror("Failed to lock inventory file");
+    #####:  173:        return;
+    #####:  178:        perror("Failed to seek in inventory file");
+    #####:  179:        return;
+    #####:  186:        perror("Failed to write inventory");
+    #####:  192:        perror("Warning: Failed to unlock inventory file");
+    #####:  406:        return;
+    #####:  628:            perror("TCP listen");
+    #####:  629:            exit(1);
+    #####:  645:            perror("UDP bind");
+    #####:  646:            exit(1);
+    #####:  664:            perror("UDS stream bind");
+    #####:  665:            exit(1);
+    #####:  668:            perror("UDS stream listen");
+    #####:  669:            exit(1);
+    #####:  687:            perror("UDS datagram bind");
+    #####:  688:            exit(1);
+    #####:  708:            printf("Timeout occurred. Server shutting down.\n");
+    #####:  709:            break;
+    #####:  715:            perror("select");
+    #####:  716:            exit(1);
+    #####:  721:            alarm(timeout_seconds);
+    #####:  733:                            perror("TCP accept");
+    #####:  749:                        socklen_t addrlen = sizeof(client_addr);
+    #####:  750:                        new_fd = accept(uds_stream_fd, (struct sockaddr*)&client_addr, &addrlen);
+    #####:  751:                        if (new_fd == -1) {
+    #####:  752:                            perror("UDS stream accept");
+    #####:  754:                            FD_SET(new_fd, &master_set);
+    #####:  755:                            if (new_fd > fdmax) fdmax = new_fd;
+    #####:  756:                            printf("New UDS stream connection on socket %d\n", new_fd);
+    #####:  760:                            snprintf(welcome_msg, sizeof(welcome_msg), 
+    #####:  763:                            send(new_fd, welcome_msg, strlen(welcome_msg), 0);
+    #####:  776:                            perror("UDP recvfrom");
+    #####:  777:                            continue;
+    #####:  784:                        socklen_t addrlen = sizeof(client_addr);
+    #####:  785:                        int nbytes = recvfrom(uds_datagram_fd, buffer, sizeof(buffer) - 1, 0,
+    #####:  787:                        if (nbytes < 0) {
+    #####:  788:                            perror("UDS datagram recvfrom");
+    #####:  789:                            continue;
+    #####:  791:                        buffer[nbytes] = '\0';
+    #####:  792:                        handle_molecule_request(buffer, uds_datagram_fd, &client_addr, addrlen, 
+    #####:  819:                        else perror("recv");
