@@ -1,8 +1,13 @@
 # Operating Systems Ex2
 
 **Authors:**
+<<<<<<< HEAD
 - Nitzan Wainshtein, ID: 209086263
 - Aviv Oz, ID: 207543927
+=======
+- Nitzan Wainshtein, ID: XXXXX
+- Aviv Oz, ID: XXXXX
+>>>>>>> refs/remotes/origin/master
 
 ## Overview
 
@@ -240,4 +245,8 @@ make coverage-report   # Generate coverage reports
 - Default ports can be customized via command line
 - UDS socket files are automatically cleaned up
 - Persistent storage files use binary format with magic number validation
+<<<<<<< HEAD
 - Multiple transport layers can be used simultaneously
+=======
+- Multiple transport layers can be used simultaneously
+>>>>>>> refs/remotes/origin/master
