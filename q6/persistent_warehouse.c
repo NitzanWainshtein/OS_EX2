@@ -1,5 +1,5 @@
 /**
- * persistent_warehouse.c - Q6
+ * persistent_warehouse.c - q6
  * 
  * Warehouse server with persistent storage and multiple process support
  * Enhanced with proper client feedback and strict input validation

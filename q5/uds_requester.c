@@ -1,12 +1,8 @@
 /**
- * uds_requester.c - Q5
+ * uds_requester.c - q5
  *
  * Client with UDS support (both stream and datagram)
- * Enhanced with proper server response handling and no default fallbacks
- * 
- * Usage:
- *   ./uds_requester -h <hostname/IP> -p <tcp_port> [-u <udp_port>]
- *   ./uds_requester -f <UDS_stream_path> [-d <UDS_datagram_path>]
+ * Enhanced with proper server response handling and timeout
  */
 
 #include <stdio.h>
@@ -21,13 +17,12 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <netdb.h>
+#include <sys/time.h>  // לתמיכה בטיימאאוט
 
 #define BUFFER_SIZE 256
 #define MAX_ATOMS 1000000000000000000ULL
+#define RECV_TIMEOUT_SEC 5  // טיימאאוט של 5 שניות לקבלת תשובה
 
-/**
- * show_usage - displays usage instructions
- */
 void show_usage(const char *program_name) {
     printf("Usage: %s [network options] [uds options]\n\n", program_name);
     printf("Network options:\n");
@@ -43,9 +38,6 @@ void show_usage(const char *program_name) {
     printf("  %s -f /tmp/stream.sock\n", program_name);
 }
 
-/**
- * show_main_menu - displays the main menu
- */
 void show_main_menu(int molecule_enabled) {
     printf("\n=== MOLECULE REQUESTER MENU ===\n");
     printf("1. Add atoms\n");
@@ -54,26 +46,16 @@ void show_main_menu(int molecule_enabled) {
     printf("Your choice: ");
 }
 
-/**
- * show_atom_menu - displays the atoms menu
- */
 void show_atom_menu() {
     printf("\n--- ADD ATOMS ---\n");
     printf("1. CARBON\n2. OXYGEN\n3. HYDROGEN\n4. Back\nYour choice: ");
 }
 
-/**
- * show_molecule_menu - displays the molecules menu
- */
 void show_molecule_menu() {
     printf("\n--- REQUEST MOLECULE ---\n");
     printf("1. WATER\n2. CARBON DIOXIDE\n3. ALCOHOL\n4. GLUCOSE\n5. Back\nYour choice: ");
 }
 
-/**
- * read_unsigned_long_long - reads a positive number from user
- * returns 1 on success, 0 on failure
- */
 int read_unsigned_long_long(unsigned long long *result) {
     char input[BUFFER_SIZE];
     if (!fgets(input, sizeof(input), stdin)) return 0;
@@ -85,9 +67,6 @@ int read_unsigned_long_long(unsigned long long *result) {
     return 1;
 }
 
-/**
- * hostname_to_ip - converts hostname to IP
- */
 int hostname_to_ip(const char *hostname, char *ip) {
     struct hostent *he;
     struct in_addr addr;
@@ -106,13 +85,23 @@ int hostname_to_ip(const char *hostname, char *ip) {
     return 0;
 }
 
-/**
- * is_shutdown_message - checks if the server is shutting down
- */
 int is_shutdown_message(const char *msg) {
     return (strstr(msg, "shutting down") != NULL || 
             strstr(msg, "shutdown") != NULL ||
             strstr(msg, "closing") != NULL);
+}
+
+// הוספת פונקציה להגדרת טיימאאוט על סוקט
+int set_socket_timeout(int sock_fd, int seconds) {
+    struct timeval tv;
+    tv.tv_sec = seconds;
+    tv.tv_usec = 0;
+    
+    if (setsockopt(sock_fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
+        perror("Failed to set socket timeout");
+        return -1;
+    }
+    return 0;
 }
 
 int main(int argc, char *argv[]) {
@@ -247,6 +236,10 @@ int main(int argc, char *argv[]) {
                 close(stream_fd);
                 exit(EXIT_FAILURE);
             }
+            
+            // הגדרת טיימאאוט לסוקט ה-UDP
+            set_socket_timeout(datagram_fd, RECV_TIMEOUT_SEC);
+            
             molecule_enabled = 1;
             printf(", UDP:%d", udp_port);
         }
@@ -281,6 +274,10 @@ int main(int argc, char *argv[]) {
                 close(stream_fd);
                 exit(EXIT_FAILURE);
             }
+            
+            // הגדרת טיימאאוט לסוקט ה-UDS datagram
+            set_socket_timeout(datagram_fd, RECV_TIMEOUT_SEC);
+            
             molecule_enabled = 1;
             printf(", datagram:%s", uds_datagram_path);
         }
@@ -427,6 +424,9 @@ int main(int argc, char *argv[]) {
                     if (n > 0) {
                         recv_buffer[n] = '\0';
                         printf("Server: %s", recv_buffer);
+                    } else if (n == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+                        // טיימאאוט - לא התקבלה תשובה מהשרת תוך פרק הזמן המוגדר
+                        printf("Server response timeout. The request may have been processed.\n");
                     } else {
                         perror("UDP receive failed");
                     }
@@ -447,6 +447,9 @@ int main(int argc, char *argv[]) {
                     if (n > 0) {
                         recv_buffer[n] = '\0';
                         printf("Server: %s", recv_buffer);
+                    } else if (n == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+                        // טיימאאוט - לא התקבלה תשובה מהשרת תוך פרק הזמן המוגדר
+                        printf("Server response timeout. The request may have been processed.\n");
                     } else {
                         perror("UDS datagram receive failed");
                     }
