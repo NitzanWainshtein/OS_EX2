@@ -1,13 +1,9 @@
 # Operating Systems Ex2
 
 **Authors:**
-<<<<<<< HEAD
-- Nitzan Wainshtein, ID: 209086263
-- Aviv Oz, ID: 207543927
-=======
 - Nitzan Wainshtein, ID: XXXXX
 - Aviv Oz, ID: XXXXX
->>>>>>> refs/remotes/origin/master
+
 
 ## Overview
 
